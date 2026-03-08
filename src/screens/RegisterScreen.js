@@ -73,7 +73,7 @@ const RegisterScreen = ({ navigation }) => {
           <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={[styles.input, errors.name && styles.inputError]}
-            placeholder="John Doe"
+            placeholder="lawrence gwapo"
             value={name}
             onChangeText={setName}
             editable={!isLoading}

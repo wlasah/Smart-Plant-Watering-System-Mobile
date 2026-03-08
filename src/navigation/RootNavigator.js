@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../hooks/useAppHooks';
 
@@ -13,7 +13,7 @@ import PlantDetailScreen from '../screens/PlantDetailScreen';
 import AddPlantScreen from '../screens/AddPlantScreen';
 import CareGuideScreen from '../screens/CareGuideScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const AuthStack = () => (
