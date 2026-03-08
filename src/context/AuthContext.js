@@ -154,44 +154,6 @@ export const AuthProvider = ({ children }) => {
           return { success: false, error: error.message };
         }
       },
-      signUp: async (name, email, password) => {
-        try {
-          const usersJSON = await AsyncStorage.getItem('users');
-          const users = usersJSON ? JSON.parse(usersJSON) : [];
-
-          if (users.some(u => u.email === email)) {
-            throw new Error('Email already registered');
-          }
-
-          const newUser = {
-            id: Date.now().toString(),
-            name,
-            email,
-            password,
-          };
-
-          users.push(newUser);
-          await AsyncStorage.setItem('users', JSON.stringify(users));
-
-          const userToken = Math.random().toString(36).substr(2);
-          await AsyncStorage.setItem('userToken', userToken);
-          await AsyncStorage.setItem('userData', JSON.stringify({
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name,
-          }));
-
-          dispatch({
-            type: 'SIGN_UP',
-            payload: userToken,
-            user: { id: newUser.id, email: newUser.email, name: newUser.name },
-          });
-
-          return { success: true };
-        } catch (error) {
-          return { success: false, error: error.message };
-        }
-      },
     }),
     []
   );
