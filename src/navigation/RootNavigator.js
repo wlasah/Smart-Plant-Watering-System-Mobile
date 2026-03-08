@@ -12,6 +12,7 @@ import PlantListScreen from '../screens/PlantListScreen';
 import PlantDetailScreen from '../screens/PlantDetailScreen';
 import AddPlantScreen from '../screens/AddPlantScreen';
 import CareGuideScreen from '../screens/CareGuideScreen';
+import CareScheduleScreen from '../screens/CareScheduleScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -92,6 +93,14 @@ const AppStack = () => (
       options={{
         tabBarLabel: 'Guide',
         tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🌿</Text>,
+      }}
+    />
+    <Tab.Screen
+      name="CareSchedule"
+      component={CareScheduleScreen}
+      options={{
+        tabBarLabel: 'Schedule',
+        tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🗓️</Text>,
       }}
     />
   </Tab.Navigator>

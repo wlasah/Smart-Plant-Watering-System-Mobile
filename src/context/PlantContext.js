@@ -6,6 +6,7 @@ export const PlantContext = createContext();
 export const PlantProvider = ({ children }) => {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reminders, setReminders] = useState([]);
 
   // Initialize with demo data
   useEffect(() => {
@@ -74,12 +75,35 @@ export const PlantProvider = ({ children }) => {
     initializePlants();
   }, []);
 
+  useEffect(() => {
+    const loadReminders = async () => {
+      try {
+        const storedReminders = await AsyncStorage.getItem('reminders');
+        if (storedReminders) {
+          setReminders(JSON.parse(storedReminders));
+        }
+      } catch (error) {
+        console.error('Error loading reminders:', error);
+      }
+    };
+    loadReminders();
+  }, []);
+
   const savePlants = useCallback(async (updatedPlants) => {
     try {
       await AsyncStorage.setItem('plants', JSON.stringify(updatedPlants));
       setPlants(updatedPlants);
     } catch (error) {
       console.error('Error saving plants:', error);
+    }
+  }, []);
+
+  const saveReminders = useCallback(async (updatedReminders) => {
+    try {
+      await AsyncStorage.setItem('reminders', JSON.stringify(updatedReminders));
+      setReminders(updatedReminders);
+    } catch (error) {
+      console.error('Error saving reminders:', error);
     }
   }, []);
 
@@ -147,6 +171,17 @@ export const PlantProvider = ({ children }) => {
     }
   }, [plants, savePlants]);
 
+  const addReminder = useCallback(async (reminder) => {
+    const newReminder = { ...reminder, id: Date.now().toString() };
+    const updatedReminders = [...reminders, newReminder];
+    await saveReminders(updatedReminders);
+  }, [reminders, saveReminders]);
+
+  const removeReminder = useCallback(async (reminderId) => {
+    const updatedReminders = reminders.filter(r => r.id !== reminderId);
+    await saveReminders(updatedReminders);
+  }, [reminders, saveReminders]);
+
   const getPlantStats = useCallback(() => {
     const totalPlants = plants.length;
     const healthyPlants = plants.filter(p => p.moisture > 40).length;
@@ -171,6 +206,9 @@ export const PlantProvider = ({ children }) => {
     updatePlant,
     deletePlant,
     getPlantStats,
+    reminders,
+    addReminder,
+    removeReminder,
   };
 
   return (
