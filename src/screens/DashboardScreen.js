@@ -119,7 +119,7 @@ const DashboardScreen = ({ navigation }) => {
       <View style={styles.actionsSection}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('PlantList')}
+          onPress={() => navigation.navigate('Plants')}
         >
           <Text style={styles.actionIcon}>📋</Text>
           <Text style={styles.actionText}>View All Plants</Text>

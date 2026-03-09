@@ -64,8 +64,9 @@ export const sortPlantsByMoisture = (plants, order = 'desc') => {
 
 export const filterPlantsByStatus = (plants, status) => {
   if (status === 'all') return plants;
-  if (status === 'healthy') return plants.filter(p => p.moisture > 40);
-  if (status === 'needsWater') return plants.filter(p => p.moisture <= 40);
+  if (status === 'healthy') return plants.filter(p => p.moisture >= 60);
+  if (status === 'needsWater') return plants.filter(p => p.moisture >= 40 && p.moisture < 60);
+  if (status === 'unhealthy') return plants.filter(p => p.moisture < 40);
   return plants;
 };
 

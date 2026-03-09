@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { usePlants } from '../hooks/useAppHooks';
 import { getMoistureStatus, formatLastWatered } from '../utils/helpers';
+import MoistureGauge from '../components/MoistureGauge';
+import WateringHistoryList from '../components/WateringHistoryList';
 
 const PlantDetailScreen = ({ route, navigation }) => {
   const { plant: initialPlant } = route.params;
@@ -18,6 +20,12 @@ const PlantDetailScreen = ({ route, navigation }) => {
   // Find latest plant data from context
   const plant = plants.find(p => p.id === initialPlant.id) || initialPlant;
   const { color } = getMoistureStatus(plant.moisture);
+
+  const getHealthRecommendation = (moisture) => {
+    if (moisture >= 60) return 'Your plant is healthy. Continue with regular care.';
+    if (moisture >= 40) return 'Moisture is slightly low; water within the next day or two.';
+    return 'Soil is dry – water immediately to prevent stress.';
+  };
 
   const handleWater = async () => {
     setWatering(true);
@@ -72,22 +80,7 @@ const PlantDetailScreen = ({ route, navigation }) => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>💧 Moisture Level</Text>
         <View style={styles.moistureDisplay}>
-          <Text style={[styles.moistureValue, { color }]}>
-            {plant.moisture}%
-          </Text>
-        </View>
-
-        <View style={styles.moistureBar}>
-          <View
-            style={[
-              styles.moistureFill,
-              { width: `${plant.moisture}%`, backgroundColor: color },
-            ]}
-          />
-        </View>
-
-        <View style={styles.moistureInfo}>
-          <Text style={styles.moistureLabel}>Status: {getMoistureStatus(plant.moisture).status}</Text>
+          <MoistureGauge level={plant.moisture} />
           <Text style={styles.moistureLabel}>
             Last watered: {formatLastWatered(plant.lastWatered)}
           </Text>
@@ -130,23 +123,16 @@ const PlantDetailScreen = ({ route, navigation }) => {
         </View>
       )}
 
+      {/* Health Recommendations */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>🩺 Health Recommendations</Text>
+        <Text style={styles.recommendationText}>{getHealthRecommendation(plant.moisture)}</Text>
+      </View>
+
       {/* Watering History */}
       {plant.wateringHistory && plant.wateringHistory.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 Watering History</Text>
-          {plant.wateringHistory.slice(-5).reverse().map((entry, index) => (
-            <View key={index} style={styles.historyItem}>
-              <Text style={styles.historyDate}>
-                {new Date(entry.date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
-              <Text style={styles.historyAmount}>💧 {entry.amount}ml</Text>
-            </View>
-          ))}
+          <WateringHistoryList history={plant.wateringHistory} />
         </View>
       )}
 
@@ -244,6 +230,11 @@ const styles = StyleSheet.create({
   moistureLabel: {
     fontSize: 14,
     color: '#666',
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: '#444',
+    lineHeight: 20,
   },
   infoBox: {
     backgroundColor: '#f9f9f9',

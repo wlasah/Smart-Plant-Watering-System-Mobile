@@ -16,6 +16,7 @@ const PlantListScreen = ({ navigation }) => {
   const { plants, waterPlant } = usePlants();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
 
   const filteredPlants = useMemo(() => {
     let result = plants;
@@ -32,7 +33,8 @@ const PlantListScreen = ({ navigation }) => {
   const handleWater = async (plantId) => {
     const result = await waterPlant(plantId);
     if (result.success) {
-      // Success feedback in component
+      // Reset filter to 'all' to show the updated plant
+      setFilterStatus('all');
     }
   };
 
@@ -58,36 +60,75 @@ const PlantListScreen = ({ navigation }) => {
         ) : null}
       </View>
 
-      {/* Filter Buttons */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-      >
-        {[
-          { label: 'All', value: 'all' },
-          { label: 'Healthy', value: 'healthy' },
-          { label: 'Needs Water', value: 'needsWater' },
-        ].map(filter => (
+      {/* Filter Buttons & View Toggle */}
+      <View style={styles.filterHeaderRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterContainer}
+        >
+          {[
+            { label: 'All', value: 'all' },
+            { label: 'Healthy', value: 'healthy' },
+            { label: 'Needs Water', value: 'needsWater' },
+            { label: 'Unhealthy', value: 'unhealthy' },
+          ].map(filter => (
+            <TouchableOpacity
+              key={filter.value}
+              style={[
+                styles.filterButton,
+                filterStatus === filter.value && styles.filterButtonActive,
+              ]}
+              onPress={() => setFilterStatus(filter.value)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  filterStatus === filter.value && styles.filterTextActive,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* View Mode Toggle */}
+        <View style={styles.viewToggleContainer}>
           <TouchableOpacity
-            key={filter.value}
             style={[
-              styles.filterButton,
-              filterStatus === filter.value && styles.filterButtonActive,
+              styles.viewToggleButton,
+              viewMode === 'list' && styles.viewToggleButtonActive,
             ]}
-            onPress={() => setFilterStatus(filter.value)}
+            onPress={() => setViewMode('list')}
           >
             <Text
               style={[
-                styles.filterText,
-                filterStatus === filter.value && styles.filterTextActive,
+                styles.viewToggleIcon,
+                viewMode === 'list' && styles.viewToggleIconActive,
               ]}
             >
-              {filter.label}
+              ☰
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          <TouchableOpacity
+            style={[
+              styles.viewToggleButton,
+              viewMode === 'grid' && styles.viewToggleButtonActive,
+            ]}
+            onPress={() => setViewMode('grid')}
+          >
+            <Text
+              style={[
+                styles.viewToggleIcon,
+                viewMode === 'grid' && styles.viewToggleIconActive,
+              ]}
+            >
+              ⊞
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {/* Results Count */}
       <View style={styles.resultsHeader}>
@@ -116,26 +157,30 @@ const PlantListScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {renderHeader()}
-      {filteredPlants.length === 0 ? (
-        renderEmpty()
-      ) : (
-        <FlatList
-          data={filteredPlants}
-          renderItem={({ item }) => (
-            <View style={styles.plantItemContainer}>
-              <PlantCard
-                plant={item}
-                onPress={handlePlantPress}
-                onWater={handleWater}
-              />
-            </View>
-          )}
-          keyExtractor={item => item.id}
-          scrollEnabled={false}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+      <FlatList
+        data={filteredPlants}
+        renderItem={({ item }) => (
+          <View
+            style={[
+              styles.plantItemContainer,
+              viewMode === 'grid' && styles.plantItemContainerGrid,
+            ]}
+          >
+            <PlantCard
+              plant={item}
+              onPress={handlePlantPress}
+              onWater={handleWater}
+            />
+          </View>
+        )}
+        keyExtractor={item => item.id}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        numColumns={viewMode === 'grid' ? 2 : 1}
+        contentContainerStyle={styles.listContent}
+        columnWrapperStyle={viewMode === 'grid' ? styles.gridColumnWrapper : null}
+        scrollEnabled={true}
+      />
     </View>
   );
 };
@@ -173,6 +218,7 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingHorizontal: 20,
     marginBottom: 12,
+    flex: 1,
   },
   filterButton: {
     paddingHorizontal: 14,
@@ -245,6 +291,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     textAlign: 'center',
+  },
+  filterHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  viewToggleContainer: {
+    flexDirection: 'row',
+    paddingRight: 20,
+    gap: 6,
+  },
+  viewToggleButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  viewToggleButtonActive: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  viewToggleIcon: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  viewToggleIconActive: {
+    color: 'white',
+  },
+  plantItemContainerGrid: {
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  gridColumnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 8,
   },
 });
 
