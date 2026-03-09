@@ -62,6 +62,14 @@ export const sortPlantsByMoisture = (plants, order = 'desc') => {
   });
 };
 
+export const sortPlantsByLastWatered = (plants) => {
+  return [...plants].sort((a, b) => {
+    const dateA = new Date(a.lastWatered || 0);
+    const dateB = new Date(b.lastWatered || 0);
+    return dateB - dateA; // Most recent first
+  });
+};
+
 export const filterPlantsByStatus = (plants, status) => {
   if (status === 'all') return plants;
   if (status === 'healthy') return plants.filter(p => p.moisture >= 60);

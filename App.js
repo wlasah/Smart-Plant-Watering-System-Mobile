@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { PlantProvider } from './src/context/PlantContext';
 import RootNavigator from './src/navigation/RootNavigator';
-import { initializeNotifications } from './src/utils/notificationService';
+// Notifications disabled for local development with Expo Go
+// import { initializeNotifications } from './src/utils/notificationService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,8 +21,8 @@ export default function App() {
           // You can add custom fonts here if needed
         });
 
-        // Initialize notifications
-        await initializeNotifications();
+        // Notifications disabled for local development with Expo Go
+        // await initializeNotifications();
 
         // Simulate loading time
         await new Promise(resolve => setTimeout(resolve, 500));

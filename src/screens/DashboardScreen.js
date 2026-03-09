@@ -12,7 +12,7 @@ import { usePlants } from '../hooks/useAppHooks';
 import { useAuth } from '../hooks/useAppHooks';
 import StatsCard from '../components/StatsCard';
 import PlantCard from '../components/PlantCard';
-import { sortPlantsByMoisture } from '../utils/helpers';
+import { sortPlantsByMoisture, sortPlantsByLastWatered } from '../utils/helpers';
 
 const DashboardScreen = ({ navigation }) => {
   const { plants, loading, getPlantStats, waterPlant } = usePlants();
@@ -57,7 +57,7 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   const plantsNeedingAttention = plants.filter(p => p.moisture <= 40);
-  const recentlyWatered = sortPlantsByMoisture(plants, 'desc').slice(0, 3);
+  const recentlyWatered = sortPlantsByLastWatered(plants).slice(0, 3);
 
   return (
     <ScrollView

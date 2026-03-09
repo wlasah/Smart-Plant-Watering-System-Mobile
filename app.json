@@ -24,12 +24,13 @@
     "web": {
     },
     "plugins": [
-      [
-        "expo-notifications",
-        {
-          "color": "#4CAF50"
-        }
-      ]
+      // Notifications disabled for local development with Expo Go
+      // [
+      //   "expo-notifications",
+      //   {
+      //     "color": "#4CAF50"
+      //   }
+      // ]
     ]
   }
 }
