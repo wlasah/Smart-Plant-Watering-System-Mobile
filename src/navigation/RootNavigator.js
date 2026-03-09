@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAppHooks';
 
 // Screens
@@ -56,55 +57,59 @@ const PlantsStack = () => (
   </Stack.Navigator>
 );
 
-const AppStack = () => (
-  <Tab.Navigator
-    screenOptions={{
-      headerShown: false,
-      tabBarActiveTintColor: '#4CAF50',
-      tabBarInactiveTintColor: '#ccc',
-      tabBarStyle: {
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-        paddingBottom: 8,
-        paddingTop: 8,
-        height: 60,
-      },
-    }}
-  >
-    <Tab.Screen
-      name="Dashboard"
-      component={DashboardStack}
-      options={{
-        tabBarLabel: 'Home',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🏠</Text>,
+const AppStack = () => {
+  const insets = useSafeAreaInsets();
+  
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#4CAF50',
+        tabBarInactiveTintColor: '#ccc',
+        tabBarStyle: {
+          borderTopWidth: 1,
+          borderTopColor: '#f0f0f0',
+          paddingBottom: 8 + insets.bottom,
+          paddingTop: 8,
+          height: 60 + insets.bottom,
+        },
       }}
-    />
-    <Tab.Screen
-      name="Plants"
-      component={PlantsStack}
-      options={{
-        tabBarLabel: 'Plants',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🌱</Text>,
-      }}
-    />
-    <Tab.Screen
-      name="CareGuide"
-      component={CareGuideScreen}
-      options={{
-        tabBarLabel: 'Guide',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🌿</Text>,
-      }}
-    />
-    <Tab.Screen
-      name="CareSchedule"
-      component={CareScheduleScreen}
-      options={{
-        tabBarLabel: 'Schedule',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🗓️</Text>,
-      }}
-    />
-  </Tab.Navigator>
-);
+    >
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardStack}
+        options={{
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🏠</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="Plants"
+        component={PlantsStack}
+        options={{
+          tabBarLabel: 'Plants',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🌱</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="CareGuide"
+        component={CareGuideScreen}
+        options={{
+          tabBarLabel: 'Guide',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🌿</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="CareSchedule"
+        component={CareScheduleScreen}
+        options={{
+          tabBarLabel: 'Schedule',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🗓️</Text>,
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const RootNavigator = () => {
   const { userToken, isLoading } = useAuth();

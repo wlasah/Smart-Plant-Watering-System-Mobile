@@ -158,18 +158,21 @@ const PlantListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <FlatList
+        key={viewMode} // Force re-render when viewMode changes
         data={filteredPlants}
         renderItem={({ item }) => (
           <View
-            style={[
-              styles.plantItemContainer,
-              viewMode === 'grid' && styles.plantItemContainerGrid,
-            ]}
+            style={
+              viewMode === 'grid'
+                ? styles.plantItemContainerGrid
+                : styles.plantItemContainer
+            }
           >
             <PlantCard
               plant={item}
               onPress={handlePlantPress}
               onWater={handleWater}
+              isGridView={viewMode === 'grid'}
             />
           </View>
         )}
@@ -266,6 +269,7 @@ const styles = StyleSheet.create({
   },
   plantItemContainer: {
     paddingHorizontal: 20,
+    marginBottom: 12,
   },
   listContent: {
     paddingTop: 8,
@@ -323,13 +327,13 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   plantItemContainerGrid: {
-    flex: 1,
-    paddingHorizontal: 8,
+    width: '50%',
+    paddingHorizontal: 6,
+    marginBottom: 8,
   },
   gridColumnWrapper: {
+    paddingHorizontal: 8,
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 8,
   },
 });
 

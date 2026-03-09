@@ -10,13 +10,13 @@ import { getMoistureStatus, formatLastWatered, getPlantInitials } from '../utils
 
 const { width } = Dimensions.get('window');
 
-const PlantCard = ({ plant, onPress, onWater }) => {
+const PlantCard = ({ plant, onPress, onWater, isGridView }) => {
   const { color } = getMoistureStatus(plant.moisture);
   const initials = getPlantInitials(plant.name);
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, isGridView && styles.cardGrid]}
       onPress={() => onPress && onPress(plant)}
       activeOpacity={0.8}
     >
@@ -70,6 +70,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+    flexDirection: 'column',
+  },
+  cardGrid: {
+    marginBottom: 0,
+    minHeight: 300,
+    justifyContent: 'space-between',
   },
   header: {
     flexDirection: 'row',
@@ -103,7 +109,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   moistureContainer: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   label: {
     fontSize: 12,
@@ -131,10 +137,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   lastWatered: {
     fontSize: 12,
     color: '#999',
+    flex: 1,
   },
   waterButton: {
     paddingHorizontal: 12,
@@ -142,6 +152,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     backgroundColor: 'transparent',
+    marginLeft: 8,
   },
   waterButtonText: {
     fontSize: 12,
