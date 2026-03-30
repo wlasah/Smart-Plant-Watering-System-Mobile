@@ -15,8 +15,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
+    width: '48%',
+    minWidth: 150,
     borderLeftWidth: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -25,8 +27,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   icon: {
-    fontSize: 32,
-    marginBottom: 8,
+    fontSize: 24,
+    marginBottom: 6,
   },
   value: {
     fontSize: 28,

@@ -222,7 +222,11 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
   },
   actionsSection: {
     flexDirection: 'row',
