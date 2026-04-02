@@ -100,21 +100,6 @@ const LoginScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
-
-      <View style={styles.demoSection}>
-        <Text style={styles.demoTitle}>Demo Account</Text>
-        <Text style={styles.demoText}>
-          Email: demo@example.com{'\n'}Password: demo123
-        </Text>
-        <TouchableOpacity
-          onPress={() => {
-            setEmail('demo@example.com');
-            setPassword('demo123');
-          }}
-        >
-          <Text style={styles.fillDemoLink}>📝 Fill Demo Account</Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 };
@@ -194,30 +179,6 @@ const styles = StyleSheet.create({
   },
   linkBold: {
     color: '#4CAF50',
-    fontWeight: 'bold',
-  },
-  demoSection: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#87CEEB',
-  },
-  demoTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  demoText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 12,
-    fontFamily: 'monospace',
-  },
-  fillDemoLink: {
-    color: '#4CAF50',
-    fontSize: 12,
     fontWeight: 'bold',
   },
 });

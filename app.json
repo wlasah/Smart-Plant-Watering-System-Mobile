@@ -1,36 +1,27 @@
 {
   "expo": {
-    "name": "Smart Plant",
-    "slug": "smartplant-mobile",
+    "name": "Smart Plant Watering System",
+    "slug": "smart-plant-watering-system",
+    "icon": "./assets/SmartPlant_Logo.png",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#4CAF50"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTabletMode": true
+      "bundleIdentifier": "com.smartplant.watering"
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
+      "package": "com.smartplant.watering"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "4b32d75f-7956-4fab-9125-f02f8d0028a1"
       }
     },
-    "web": {
-    },
-    "plugins": [
-      // Notifications disabled for local development with Expo Go
-      // [
-      //   "expo-notifications",
-      //   {
-      //     "color": "#4CAF50"
-      //   }
-      // ]
-    ]
+    "owner": "wlasah"
   }
 }
