@@ -3,9 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Use your machine's IP address. Find it by running 'ipconfig' in PowerShell
 // Look for "IPv4 Address" (typically 192.168.x.x)
 // For Android emulator (MEmu): try 192.168.1.10 or 10.0.2.2
-// For physical phone on same WiFi: use 192.168.1.10
+// For physical phone on same WiFi: use YOUR_MACHINE_IP
 // For development on same machine: use localhost
-const API_BASE = 'http://192.168.1.10:8000';  // Using physical IP for both MEmu and physical phone
+// IMPORTANT: Replace this with your actual machine IP from 'ipconfig'
+const API_BASE = 'http://192.168.1.10:8000';  // ← UPDATE THIS with your machine IP
 const API_BASE_URL = `${API_BASE}/api`;
 
 /**
@@ -39,6 +40,29 @@ const fetchWithToken = async (endpoint, options = {}) => {
       };
     }
     
+    if (!response.ok) {
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw {
+          status: response.status,
+          message: 'Server error',
+          error: e.message,
+        };
+      }
+      throw {
+        status: response.status,
+        message: data.detail || data.message || 'An error occurred',
+        data,
+      };
+    }
+    
+    // Handle 204 No Content (successful DELETE)
+    if (response.status === 204) {
+      return { success: true };
+    }
+    
     let data;
     try {
       data = await response.json();
@@ -47,14 +71,6 @@ const fetchWithToken = async (endpoint, options = {}) => {
         status: response.status,
         message: 'Invalid response from server',
         error: e.message,
-      };
-    }
-    
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        message: data.detail || data.message || 'An error occurred',
-        data,
       };
     }
     

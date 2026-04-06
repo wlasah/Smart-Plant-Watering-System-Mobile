@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Image,
 } from 'react-native';
 import styles from '../styles/DashboardScreenStyles';
 import { usePlants } from '../hooks/useAppHooks';
 import { useAuth } from '../hooks/useAppHooks';
+import { useUserProfile } from '../hooks/useUserProfile';
 import StatsCard from '../components/StatsCard';
 import PlantCard from '../components/PlantCard';
 import { sortPlantsByMoisture, sortPlantsByLastWatered } from '../utils/helpers';
@@ -17,13 +19,24 @@ import { sortPlantsByMoisture, sortPlantsByLastWatered } from '../utils/helpers'
 const DashboardScreen = ({ navigation }) => {
   const { plants, loading, getPlantStats, waterPlant } = usePlants();
   const { user, signOut } = useAuth();
+  const { profile, getDisplayName } = useUserProfile();
   const [refreshing, setRefreshing] = useState(false);
+  const [avatarColor, setAvatarColor] = useState('#4CAF50');
   const [stats, setStats] = useState({
     totalPlants: 0,
     healthyPlants: 0,
     needsAttention: 0,
     avgMoisture: 0,
   });
+
+  useEffect(() => {
+    // Generate consistent color for avatar
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+    if (user?.id) {
+      const colorIndex = user.id % colors.length;
+      setAvatarColor(colors[colorIndex]);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     updateStats();
@@ -68,11 +81,56 @@ const DashboardScreen = ({ navigation }) => {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View>
+      <View style={[styles.header, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>Welcome back! 👋</Text>
-          <Text style={styles.name}>{user?.name || 'Plant Lover'}</Text>
+          <Text style={styles.name}>
+            {user?.first_name && user?.last_name
+              ? `${user.first_name} ${user.last_name}`
+              : user?.username || 'Plant Lover'}
+          </Text>
         </View>
+        
+        {/* Profile Avatar */}
+        <TouchableOpacity
+          onPress={() => navigation.getParent()?.openDrawer?.()}
+          style={{ marginHorizontal: 8 }}
+        >
+          <View
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 25,
+              backgroundColor: avatarColor,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: '#fff',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
+            {profile?.profile_picture ? (
+              <Image
+                source={{ uri: profile.profile_picture }}
+                style={{ width: 50, height: 50, borderRadius: 25 }}
+              />
+            ) : (
+              <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff' }}>
+                {getDisplayName()
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={() => {
