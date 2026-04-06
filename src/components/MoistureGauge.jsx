@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
+import styles from '../styles/MoistureGaugeStyles';
 // We rely on react-native-svg for the circular gauge.
 // Install with `expo install react-native-svg` if not already available.
 import Svg, { Circle } from 'react-native-svg';
@@ -49,21 +50,5 @@ const MoistureGauge = ({ level = 0, size = 120, strokeWidth = 12 }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelContainer: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-});
 
 export default MoistureGauge;
