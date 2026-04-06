@@ -9,22 +9,21 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import styles from '../styles/LoginScreenStyles';
-import { useAuth } from '../hooks/useAppHooks';
-import { validateEmail, validatePassword } from '../utils/helpers';
+import { useAuth, usePlants } from '../hooks/useAppHooks';
+import { validatePassword } from '../utils/helpers';
 
 const LoginScreen = ({ navigation }) => {
   const { signIn, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
+  const { refetchPlants } = usePlants();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(email)) {
-      newErrors.email = 'Invalid email format';
+    if (!username) {
+      newErrors.username = 'Username is required';
     }
 
     if (!password) {
@@ -40,9 +39,24 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     if (!validateForm()) return;
 
-    const result = await signIn(email, password);
-    if (!result.success) {
-      Alert.alert('Login Failed', result.error);
+    try {
+      console.log('[LoginScreen] Starting login process...');
+      const result = await signIn(username, password);
+      
+      console.log('[LoginScreen] Sign in result:', result);
+      
+      if (result.success) {
+        console.log('[LoginScreen] Login successful, refetching plants...');
+        // Refetch plants after successful login
+        await refetchPlants();
+        console.log('[LoginScreen] Plants refetched successfully');
+      } else {
+        console.error('[LoginScreen] Login failed:', result.error);
+        Alert.alert('Login Failed', result.error);
+      }
+    } catch (err) {
+      console.error('[LoginScreen] Unexpected error:', err);
+      Alert.alert('Error', 'An unexpected error occurred');
     }
   };
 
@@ -53,17 +67,16 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.form}>
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
-            style={[styles.input, errors.email && styles.inputError]}
-            placeholder="you@example.com"
-            value={email}
-            onChangeText={setEmail}
+            style={[styles.input, errors.username && styles.inputError]}
+            placeholder="Enter your username"
+            value={username}
+            onChangeText={setUsername}
             editable={!isLoading}
             autoCapitalize="none"
-            keyboardType="email-address"
           />
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
         </View>
 
         <View style={styles.fieldContainer}>

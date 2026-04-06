@@ -29,24 +29,27 @@ const DashboardScreen = ({ navigation }) => {
     updateStats();
   }, [plants]);
 
-  const updateStats = () => {
-    const newStats = getPlantStats();
+  const updateStats = async () => {
+    const newStats = await getPlantStats();
     setStats(newStats);
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      updateStats();
+    try {
+      await updateStats();
+    } catch (error) {
+      console.error('Error refreshing stats:', error);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+    }
   };
 
   const handleWaterPlant = async (plantId) => {
     const result = await waterPlant(plantId);
     if (result.success) {
       Alert.alert('Success', 'Plant watered! 💧');
-      updateStats();
+      await updateStats();
     } else {
       Alert.alert('Error', result.error);
     }
@@ -178,7 +181,7 @@ const DashboardScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('PlantList')}
+            onPress={() => navigation.navigate('Plants', { screen: 'AddPlant' })}
           >
             <Text style={styles.emptyButtonText}>Add Your First Plant</Text>
           </TouchableOpacity>

@@ -9,12 +9,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import styles from '../styles/RegisterScreenStyles';
-import { useAuth } from '../hooks/useAppHooks';
+import { useAuth, usePlants } from '../hooks/useAppHooks';
 import { validateEmail, validatePassword } from '../utils/helpers';
 
 const RegisterScreen = ({ navigation }) => {
   const { signUp, isLoading } = useAuth();
-  const [name, setName] = useState('');
+  const { refetchPlants } = usePlants();
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,8 +24,8 @@ const RegisterScreen = ({ navigation }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
     }
 
     if (!email) {
@@ -50,8 +51,11 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async () => {
     if (!validateForm()) return;
 
-    const result = await signUp(name, email, password);
-    if (!result.success) {
+    const result = await signUp(username, email, password);
+    if (result.success) {
+      // Refetch plants after successful registration
+      await refetchPlants();
+    } else {
       Alert.alert('Registration Failed', result.error);
     }
   };
@@ -70,15 +74,16 @@ const RegisterScreen = ({ navigation }) => {
 
       <View style={styles.form}>
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
-            style={[styles.input, errors.name && styles.inputError]}
-            placeholder="lawrence gwapo"
-            value={name}
-            onChangeText={setName}
+            style={[styles.input, errors.username && styles.inputError]}
+            placeholder="Choose your username"
+            value={username}
+            onChangeText={setUsername}
             editable={!isLoading}
+            autoCapitalize="none"
           />
-          {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
         </View>
 
         <View style={styles.fieldContainer}>

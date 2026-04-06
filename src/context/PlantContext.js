@@ -1,230 +1,244 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { plantsAPI } from '../services/api';
 
 export const PlantContext = createContext();
 
 export const PlantProvider = ({ children }) => {
   const [plants, setPlants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [reminders, setReminders] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize with demo data
+  // Fetch plants from backend on mount and every 30 seconds (only if logged in)
   useEffect(() => {
-    const initializePlants = async () => {
+    const fetchPlants = async () => {
       try {
-        const storedPlants = await AsyncStorage.getItem('plants');
-        if (storedPlants) {
-          setPlants(JSON.parse(storedPlants));
-        } else {
-          // Demo data for first-time users
-          const demoPlants = [
-            {
-              id: '1',
-              name: 'Monstera Deliciosa',
-              location: 'Living Room',
-              type: 'Tropical Plant',
-              moisture: 45,
-              lastWatered: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-              wateringHistory: [],
-              careRequirements: {
-                waterFrequency: 'Every 7 days',
-                lightRequirement: 'Bright indirect light',
-                temperature: '68-86°F',
-              },
-            },
-            {
-              id: '2',
-              name: 'Pothos Golden',
-              location: 'Bedroom',
-              type: 'Vine',
-              moisture: 35,
-              lastWatered: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              wateringHistory: [],
-              careRequirements: {
-                waterFrequency: 'Every 5 days',
-                lightRequirement: 'Low to bright indirect light',
-                temperature: '65-75°F',
-              },
-            },
-            {
-              id: '3',
-              name: 'Snake Plant',
-              location: 'Office',
-              type: 'Succulent',
-              moisture: 25,
-              lastWatered: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-              wateringHistory: [],
-              careRequirements: {
-                waterFrequency: 'Every 14 days',
-                lightRequirement: 'Low to bright light',
-                temperature: '60-75°F',
-              },
-            },
-          ];
-          
-          await AsyncStorage.setItem('plants', JSON.stringify(demoPlants));
-          setPlants(demoPlants);
+        // Check if user is logged in
+        const token = await AsyncStorage.getItem('auth_token');
+        if (!token) {
+          setPlants([]);
+          setLoading(false);
+          return;
         }
+
+        setLoading(true);
+        const data = await plantsAPI.getAllPlants();
+        // Map backend data to app format
+        const mappedPlants = data.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moisture: plant.moisture,
+          lastWatered: plant.last_watered,
+          description: plant.description,
+          careRequirements: {
+            waterFrequency: plant.care_requirements?.water_frequency,
+            lightRequirement: plant.care_requirements?.light_requirement,
+            temperature: plant.care_requirements?.temperature,
+            humidity: plant.care_requirements?.humidity,
+          },
+          watering_history: plant.watering_history,
+          created_at: plant.created_at,
+        }));
+        setPlants(mappedPlants);
       } catch (error) {
-        console.error('Error loading plants:', error);
+        console.error('Error fetching plants:', error);
+        setPlants([]);
       } finally {
         setLoading(false);
       }
     };
 
-    initializePlants();
+    fetchPlants();
+    
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(fetchPlants, 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const loadReminders = async () => {
-      try {
-        const storedReminders = await AsyncStorage.getItem('reminders');
-        if (storedReminders) {
-          setReminders(JSON.parse(storedReminders));
-        }
-      } catch (error) {
-        console.error('Error loading reminders:', error);
-      }
-    };
-    loadReminders();
-  }, []);
-
-  const savePlants = useCallback(async (updatedPlants) => {
+  const waterPlant = useCallback(async (plantId, notes = '') => {
     try {
-      await AsyncStorage.setItem('plants', JSON.stringify(updatedPlants));
-      setPlants(updatedPlants);
-    } catch (error) {
-      console.error('Error saving plants:', error);
-    }
-  }, []);
-
-  const saveReminders = useCallback(async (updatedReminders) => {
-    try {
-      await AsyncStorage.setItem('reminders', JSON.stringify(updatedReminders));
-      setReminders(updatedReminders);
-    } catch (error) {
-      console.error('Error saving reminders:', error);
-    }
-  }, []);
-
-  const waterPlant = useCallback(async (plantId) => {
-    try {
-      const updatedPlants = plants.map(plant => {
-        if (plant.id === plantId) {
-          const newWaterEntry = {
-            date: new Date().toISOString(),
-            amount: 250, // ml
-          };
-          return {
-            ...plant,
-            moisture: Math.min(100, plant.moisture + 20),
-            lastWatered: new Date().toISOString(),
-            wateringHistory: [...(plant.wateringHistory || []), newWaterEntry],
-          };
-        }
-        return plant;
-      });
-      await savePlants(updatedPlants);
+      const result = await plantsAPI.waterPlant(plantId, notes);
+      
+      // Update local state with new data
+      setPlants(prevPlants =>
+        prevPlants.map(plant => {
+          if (plant.id === plantId) {
+            return {
+              ...plant,
+              moisture: result.plant.moisture,
+              lastWatered: result.plant.last_watered,
+            };
+          }
+          return plant;
+        })
+      );
       return { success: true };
     } catch (error) {
       console.error('Error watering plant:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'Failed to water plant' };
     }
-  }, [plants, savePlants]);
+  }, []);
 
-  const addPlant = useCallback(async (plant) => {
+  const addPlant = useCallback(async (plantData) => {
     try {
-      const newPlant = {
-        id: Date.now().toString(),
-        ...plant,
-        moisture: 50,
-        lastWatered: new Date().toISOString(),
-        wateringHistory: [],
+      // Transform frontend data to backend format
+      const backendData = {
+        name: plantData.name,
+        type: plantData.type,
+        location: plantData.location,
+        moisture: plantData.moisture || 50,
+        description: plantData.description || '',
+        care_requirements: {
+          water_frequency: plantData.careRequirements?.waterFrequency || 'Every 7 days',
+          light_requirement: plantData.careRequirements?.lightRequirement || 'Bright indirect light',
+          temperature: plantData.careRequirements?.temperature || '65-75°F',
+          humidity: plantData.careRequirements?.humidity || '',
+        },
       };
-      const updatedPlants = [...plants, newPlant];
-      await savePlants(updatedPlants);
-      return { success: true, plant: newPlant };
+
+      const result = await plantsAPI.createPlant(backendData);
+      
+      // Refetch all plants from backend to ensure consistency
+      // This prevents duplicates by replacing local state with server data
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        const data = await plantsAPI.getAllPlants();
+        const mappedPlants = data.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moisture: plant.moisture,
+          lastWatered: plant.last_watered,
+          description: plant.description,
+          careRequirements: {
+            waterFrequency: plant.care_requirements?.water_frequency,
+            lightRequirement: plant.care_requirements?.light_requirement,
+            temperature: plant.care_requirements?.temperature,
+            humidity: plant.care_requirements?.humidity,
+          },
+          watering_history: plant.watering_history,
+          created_at: plant.created_at,
+        }));
+        setPlants(mappedPlants);
+      }
+      
+      return { success: true, plant: result };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Error adding plant:', error);
+      return { success: false, error: error.message || 'Failed to add plant' };
     }
-  }, [plants, savePlants]);
+  }, []);
 
   const updatePlant = useCallback(async (plantId, updates) => {
     try {
-      const updatedPlants = plants.map(plant =>
-        plant.id === plantId ? { ...plant, ...updates } : plant
+      const backendData = {
+        name: updates.name,
+        type: updates.type,
+        location: updates.location,
+        moisture: updates.moisture,
+        description: updates.description || '',
+        care_requirements: {
+          water_frequency: updates.careRequirements?.waterFrequency,
+          light_requirement: updates.careRequirements?.lightRequirement,
+          temperature: updates.careRequirements?.temperature,
+          humidity: updates.careRequirements?.humidity,
+        },
+      };
+
+      await plantsAPI.updatePlant(plantId, backendData);
+      
+      // Update local state
+      setPlants(prevPlants =>
+        prevPlants.map(plant =>
+          plant.id === plantId ? { ...plant, ...updates } : plant
+        )
       );
-      await savePlants(updatedPlants);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Error updating plant:', error);
+      return { success: false, error: error.message || 'Failed to update plant' };
     }
-  }, [plants, savePlants]);
+  }, []);
 
   const deletePlant = useCallback(async (plantId) => {
     try {
-      const updatedPlants = plants.filter(plant => plant.id !== plantId);
-      await savePlants(updatedPlants);
+      await plantsAPI.deletePlant(plantId);
+      
+      // Remove from local state
+      setPlants(prevPlants => prevPlants.filter(plant => plant.id !== plantId));
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Error deleting plant:', error);
+      return { success: false, error: error.message || 'Failed to delete plant' };
     }
-  }, [plants, savePlants]);
+  }, []);
 
-  const addReminder = useCallback(async (plantId, dayOfWeek, time) => {
+  const getPlantStats = useCallback(async () => {
     try {
-      const newReminder = {
-        id: Date.now().toString(),
-        plantId,
-        dayOfWeek, // 'Monday', 'Tuesday', etc.
-        time, // '09:00'
-        enabled: true,
+      const stats = await plantsAPI.getStats();
+      return {
+        totalPlants: stats.total_plants,
+        healthyPlants: stats.healthy,
+        needsAttention: stats.needing_water,
+        avgMoisture: Math.round(stats.average_moisture || 0),
       };
-      const updatedReminders = [...reminders, newReminder];
-      await saveReminders(updatedReminders);
-      return { success: true, reminder: newReminder };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Error fetching stats:', error);
+      // Fallback to local calculation
+      const totalPlants = plants.length;
+      const healthyPlants = plants.filter(p => p.moisture > 40).length;
+      const needsAttention = plants.filter(p => p.moisture <= 40).length;
+      const avgMoisture = plants.length > 0
+        ? Math.round(plants.reduce((sum, p) => sum + p.moisture, 0) / plants.length)
+        : 0;
+
+      return {
+        totalPlants,
+        healthyPlants,
+        needsAttention,
+        avgMoisture,
+      };
     }
-  }, [reminders, saveReminders]);
-
-  const removeReminder = useCallback(async (reminderId) => {
-    try {
-      const updatedReminders = reminders.filter(r => r.id !== reminderId);
-      await saveReminders(updatedReminders);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }, [reminders, saveReminders]);
-
-  const toggleReminder = useCallback(async (reminderId) => {
-    try {
-      const updatedReminders = reminders.map(r =>
-        r.id === reminderId ? { ...r, enabled: !r.enabled } : r
-      );
-      await saveReminders(updatedReminders);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }, [reminders, saveReminders]);
-
-  const getPlantStats = useCallback(() => {
-    const totalPlants = plants.length;
-    const healthyPlants = plants.filter(p => p.moisture > 40).length;
-    const needsAttention = plants.filter(p => p.moisture <= 40).length;
-    const avgMoisture = plants.length > 0
-      ? Math.round(plants.reduce((sum, p) => sum + p.moisture, 0) / plants.length)
-      : 0;
-
-    return {
-      totalPlants,
-      healthyPlants,
-      needsAttention,
-      avgMoisture,
-    };
   }, [plants]);
+
+  // Manually refetch plants (called after login or on demand)
+  const refetchPlants = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) {
+        setPlants([]);
+        return;
+      }
+
+      setLoading(true);
+      const data = await plantsAPI.getAllPlants();
+      const mappedPlants = data.map(plant => ({
+        id: plant.id,
+        name: plant.name,
+        type: plant.type,
+        location: plant.location,
+        moisture: plant.moisture,
+        lastWatered: plant.last_watered,
+        description: plant.description,
+        careRequirements: {
+          waterFrequency: plant.care_requirements?.water_frequency,
+          lightRequirement: plant.care_requirements?.light_requirement,
+          temperature: plant.care_requirements?.temperature,
+          humidity: plant.care_requirements?.humidity,
+        },
+        watering_history: plant.watering_history,
+        created_at: plant.created_at,
+      }));
+      console.log('[PLANTS] Refetched plants:', mappedPlants.length);
+      setPlants(mappedPlants);
+    } catch (error) {
+      console.error('[PLANTS] Error refetching:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const value = {
     plants,
@@ -234,10 +248,7 @@ export const PlantProvider = ({ children }) => {
     updatePlant,
     deletePlant,
     getPlantStats,
-    reminders,
-    addReminder,
-    removeReminder,
-    toggleReminder,
+    refetchPlants,
   };
 
   return (

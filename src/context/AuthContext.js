@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authAPI } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -49,13 +50,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const bootstrapAsync = async () => {
       try {
-        const userToken = await AsyncStorage.getItem('userToken');
+        const auth_token = await AsyncStorage.getItem('auth_token');
         const userData = await AsyncStorage.getItem('userData');
         
-        if (userToken && userData) {
+        if (auth_token && userData) {
           dispatch({
             type: 'RESTORE_TOKEN',
-            payload: userToken,
+            payload: auth_token,
             user: JSON.parse(userData),
           });
         } else {
@@ -72,81 +73,81 @@ export const AuthProvider = ({ children }) => {
 
   const authContext = React.useMemo(
     () => ({
-      signIn: async (email, password) => {
+      signIn: async (username, password) => {
         try {
-          // Simulate API call - validate against stored users
-          const usersJSON = await AsyncStorage.getItem('users');
-          const users = usersJSON ? JSON.parse(usersJSON) : [];
+          // Call Django backend login endpoint
+          const response = await authAPI.login(username, password);
           
-          const user = users.find(u => u.email === email && u.password === password);
+          // Store token and user data
+          await AsyncStorage.setItem('auth_token', response.token);
           
-          if (!user) {
-            throw new Error('Invalid credentials');
+          // Get user details
+          try {
+            const user = await authAPI.getCurrentUser();
+            await AsyncStorage.setItem('userData', JSON.stringify(user));
+            
+            dispatch({
+              type: 'SIGN_IN',
+              payload: response.token,
+              user,
+            });
+          } catch (e) {
+            // If getting user fails, still sign in with basic user data
+            await AsyncStorage.setItem('userData', JSON.stringify({
+              username,
+              id: null,
+            }));
+            
+            dispatch({
+              type: 'SIGN_IN',
+              payload: response.token,
+              user: { username },
+            });
           }
-
-          const userToken = Math.random().toString(36).substr(2);
-          await AsyncStorage.setItem('userToken', userToken);
-          await AsyncStorage.setItem('userData', JSON.stringify({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          }));
-
-          dispatch({
-            type: 'SIGN_IN',
-            payload: userToken,
-            user: { id: user.id, email: user.email, name: user.name },
-          });
 
           return { success: true };
         } catch (error) {
-          return { success: false, error: error.message };
+          const errorMessage = error.message || 'Login failed';
+          return { success: false, error: errorMessage };
         }
       },
-      signUp: async (name, email, password) => {
+
+      signUp: async (username, email, password) => {
         try {
-          // Get existing users
-          const usersJSON = await AsyncStorage.getItem('users');
-          const users = usersJSON ? JSON.parse(usersJSON) : [];
-
-          // Check if email already exists
-          if (users.some(u => u.email === email)) {
-            throw new Error('Email already registered');
-          }
-
-          const newUser = {
-            id: Date.now().toString(),
-            name,
-            email,
-            password,
-          };
-
-          users.push(newUser);
-          await AsyncStorage.setItem('users', JSON.stringify(users));
-
-          // Auto sign in after registration
-          const userToken = Math.random().toString(36).substr(2);
-          await AsyncStorage.setItem('userToken', userToken);
-          await AsyncStorage.setItem('userData', JSON.stringify({
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name,
-          }));
+          // Call Django backend register endpoint
+          const response = await authAPI.register(username, email, password);
+          
+          // Store token and user data
+          await AsyncStorage.setItem('auth_token', response.token);
+          await AsyncStorage.setItem('userData', JSON.stringify(response.user));
 
           dispatch({
             type: 'SIGN_UP',
-            payload: userToken,
-            user: { id: newUser.id, email: newUser.email, name: newUser.name },
+            payload: response.token,
+            user: response.user,
           });
 
           return { success: true };
         } catch (error) {
-          return { success: false, error: error.message };
+          const errorMessage = error.data?.username?.[0] || 
+                               error.data?.email?.[0] || 
+                               error.message || 
+                               'Registration failed';
+          return { success: false, error: errorMessage };
         }
       },
+
       signOut: async () => {
         try {
-          await AsyncStorage.removeItem('userToken');
+          // Optional: Call backend logout endpoint
+          try {
+            await authAPI.logout();
+          } catch (e) {
+            console.warn('Logout API call failed:', e);
+          }
+
+          // Clear stored data
+          await AsyncStorage.removeItem('auth_token');
           await AsyncStorage.removeItem('userData');
           dispatch({ type: 'SIGN_OUT' });
           return { success: true };
