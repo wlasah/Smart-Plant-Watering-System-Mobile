@@ -53,17 +53,23 @@ export const AuthProvider = ({ children }) => {
         const auth_token = await AsyncStorage.getItem('auth_token');
         const userData = await AsyncStorage.getItem('userData');
         
+        console.log('[AUTH] Restoring token on app start');
+        console.log('[AUTH] Token found:', !!auth_token);
+        console.log('[AUTH] User data found:', !!userData);
+        
         if (auth_token && userData) {
+          console.log('[AUTH] Token restored successfully');
           dispatch({
             type: 'RESTORE_TOKEN',
             payload: auth_token,
             user: JSON.parse(userData),
           });
         } else {
+          console.log('[AUTH] No token found - user needs to login');
           dispatch({ type: 'RESTORE_TOKEN', payload: null, user: null });
         }
       } catch (e) {
-        console.error('Failed to restore token:', e);
+        console.error('[AUTH] Failed to restore token:', e);
         dispatch({ type: 'RESTORE_TOKEN', payload: null, user: null });
       }
     };
@@ -75,8 +81,12 @@ export const AuthProvider = ({ children }) => {
     () => ({
       signIn: async (username, password) => {
         try {
+          console.log('[AUTH] Attempting login:', username);
+          
           // Call Django backend login endpoint
           const response = await authAPI.login(username, password);
+          
+          console.log('[AUTH] Login successful, saving token');
           
           // Store token and user data
           await AsyncStorage.setItem('auth_token', response.token);
@@ -86,6 +96,8 @@ export const AuthProvider = ({ children }) => {
             const user = await authAPI.getCurrentUser();
             await AsyncStorage.setItem('userData', JSON.stringify(user));
             
+            console.log('[AUTH] User data saved:', user.username);
+            
             dispatch({
               type: 'SIGN_IN',
               payload: response.token,
@@ -93,6 +105,8 @@ export const AuthProvider = ({ children }) => {
             });
           } catch (e) {
             // If getting user fails, still sign in with basic user data
+            console.warn('[AUTH] Could not fetch user details, using basic data');
+            
             await AsyncStorage.setItem('userData', JSON.stringify({
               username,
               id: null,
@@ -107,6 +121,7 @@ export const AuthProvider = ({ children }) => {
 
           return { success: true };
         } catch (error) {
+          console.error('[AUTH] Login failed:', error);
           const errorMessage = error.message || 'Login failed';
           return { success: false, error: errorMessage };
         }

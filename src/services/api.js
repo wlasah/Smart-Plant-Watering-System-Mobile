@@ -16,6 +16,8 @@ const fetchWithToken = async (endpoint, options = {}) => {
   try {
     const token = await AsyncStorage.getItem('auth_token');
     
+    console.log(`[API] ${options.method || 'GET'} ${endpoint} - Token: ${token ? 'YES ✓' : 'MISSING ✗'}`);
+    
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -23,6 +25,8 @@ const fetchWithToken = async (endpoint, options = {}) => {
     
     if (token) {
       headers.Authorization = `Token ${token}`;
+    } else {
+      console.warn(`[API] WARNING: No token available for ${endpoint}`);
     }
     
     let response;
