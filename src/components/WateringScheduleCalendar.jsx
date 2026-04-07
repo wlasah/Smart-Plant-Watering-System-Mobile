@@ -19,16 +19,30 @@ const WateringScheduleCalendar = ({ plants, selectedMonth, onMonthChange }) => {
 
   // Get plants due on a specific date
   const getPlantsAndCount = (date) => {
-    if (!date) return 0;
+    if (!date) return { count: 0, color: null };
     const plantsDue = plants.filter(plant => {
       const nextWateringDate = new Date(plant.nextWatering);
-      return (
+      const isMatch = (
         nextWateringDate.getDate() === date.getDate() &&
         nextWateringDate.getMonth() === date.getMonth() &&
         nextWateringDate.getFullYear() === date.getFullYear()
       );
+      if (isMatch) {
+        console.log(`[CALENDAR] Found plant "${plant.name}" due on ${date.toDateString()}: nextWatering=${nextWateringDate.toISOString()}, daysUntilDue=${plant.daysUntilDue}`);
+      }
+      return isMatch;
     });
-    return plantsDue.length;
+    
+    // Determine color based on urgency (using same logic as status badges)
+    let color = null;
+    if (plantsDue.length > 0) {
+      const urgency = plantsDue[0].daysUntilDue;
+      if (urgency <= 0) color = '#FF6B6B'; // Red - urgent
+      else if (urgency <= 2) color = '#FFBE0B'; // Yellow - soon
+      else color = '#4CAF50'; // Green - ok
+    }
+    
+    return { count: plantsDue.length, color };
   };
 
   const isToday = (date) => {
@@ -77,7 +91,7 @@ const WateringScheduleCalendar = ({ plants, selectedMonth, onMonthChange }) => {
       {/* Calendar Grid */}
       <View style={styles.calendarGrid}>
         {calendarDays.map((date, index) => {
-          const plantsCount = getPlantsAndCount(date);
+          const plantsData = getPlantsAndCount(date);
           const isTodayDate = isToday(date);
           
           return (
@@ -86,7 +100,7 @@ const WateringScheduleCalendar = ({ plants, selectedMonth, onMonthChange }) => {
               style={[
                 styles.dayCell,
                 isTodayDate && styles.todayCell,
-                plantsCount > 0 && styles.hasEventsCell,
+                plantsData.count > 0 && styles.hasEventsCell,
               ]}
             >
               {date && (
@@ -95,14 +109,14 @@ const WateringScheduleCalendar = ({ plants, selectedMonth, onMonthChange }) => {
                     style={[
                       styles.dayText,
                       isTodayDate && styles.todayDayText,
-                      plantsCount > 0 && styles.eventDayText,
+                      plantsData.count > 0 && styles.eventDayText,
                     ]}
                   >
                     {date.getDate()}
                   </Text>
-                  {plantsCount > 0 && (
-                    <View style={styles.eventIndicator}>
-                      <Text style={styles.eventCount}>{plantsCount}</Text>
+                  {plantsData.count > 0 && (
+                    <View style={[styles.eventIndicator, { backgroundColor: plantsData.color }]}>
+                      <Text style={styles.eventCount}>{plantsData.count}</Text>
                     </View>
                   )}
                 </>

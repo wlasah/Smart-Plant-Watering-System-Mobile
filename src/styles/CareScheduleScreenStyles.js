@@ -4,12 +4,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingTop: 16,
+    paddingTop: 8,
   },
   header: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop: 30,
     color: '#4CAF50',
     textAlign: 'center',
   },

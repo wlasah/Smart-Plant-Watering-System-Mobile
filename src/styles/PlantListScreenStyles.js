@@ -4,6 +4,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingTop: 8,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -12,7 +13,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: 30,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#ddd',
@@ -33,6 +34,7 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingHorizontal: 20,
     marginBottom: 12,
+    marginTop: 8,
     flex: 1,
   },
   filterButton: {

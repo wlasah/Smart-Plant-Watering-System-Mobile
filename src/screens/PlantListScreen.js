@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
+  SafeAreaView,
 } from 'react-native';
 import styles from '../styles/PlantListScreenStyles';
 import { usePlants } from '../hooks/useAppHooks';
@@ -156,7 +157,7 @@ const PlantListScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         key={viewMode} // Force re-render when viewMode changes
         data={filteredPlants}
@@ -184,7 +185,7 @@ const PlantListScreen = ({ navigation }) => {
         columnWrapperStyle={viewMode === 'grid' ? styles.gridColumnWrapper : null}
         scrollEnabled={true}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

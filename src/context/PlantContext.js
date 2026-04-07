@@ -15,15 +15,32 @@ export const PlantProvider = ({ children }) => {
         // Check if user is logged in
         const token = await AsyncStorage.getItem('auth_token');
         if (!token) {
+          console.log('[PLANTS] No auth token found');
           setPlants([]);
           setLoading(false);
           return;
         }
 
         setLoading(true);
+        console.log('[PLANTS] Fetching plants from API...');
         const data = await plantsAPI.getAllPlants();
+        
+        console.log('[PLANTS] Raw API response:', JSON.stringify(data, null, 2));
+        console.log('[PLANTS] Data type:', typeof data, 'Is array?', Array.isArray(data));
+        
+        // Handle both array and paginated response
+        const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+        
+        console.log('[PLANTS] Plant list after processing:', plantList.length, 'items');
+        
+        if (!Array.isArray(plantList)) {
+          console.warn('[PLANTS] Response is not an array:', data);
+          setPlants([]);
+          return;
+        }
+        
         // Map backend data to app format
-        const mappedPlants = data.map(plant => ({
+        const mappedPlants = plantList.map(plant => ({
           id: plant.id,
           name: plant.name,
           type: plant.type,
@@ -41,8 +58,9 @@ export const PlantProvider = ({ children }) => {
           created_at: plant.created_at,
         }));
         setPlants(mappedPlants);
+        console.log('[PLANTS] Loaded', mappedPlants.length, 'plants');
       } catch (error) {
-        console.error('Error fetching plants:', error);
+        console.error('[PLANTS] Error fetching:', error);
         setPlants([]);
       } finally {
         setLoading(false);
@@ -104,24 +122,30 @@ export const PlantProvider = ({ children }) => {
       const token = await AsyncStorage.getItem('auth_token');
       if (token) {
         const data = await plantsAPI.getAllPlants();
-        const mappedPlants = data.map(plant => ({
-          id: plant.id,
-          name: plant.name,
-          type: plant.type,
-          location: plant.location,
-          moisture: plant.moisture,
-          lastWatered: plant.last_watered,
-          description: plant.description,
-          careRequirements: {
-            waterFrequency: plant.care_requirements?.water_frequency,
-            lightRequirement: plant.care_requirements?.light_requirement,
-            temperature: plant.care_requirements?.temperature,
-            humidity: plant.care_requirements?.humidity,
-          },
-          watering_history: plant.watering_history,
-          created_at: plant.created_at,
-        }));
-        setPlants(mappedPlants);
+        
+        // Handle both array and paginated response
+        const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+        
+        if (Array.isArray(plantList)) {
+          const mappedPlants = plantList.map(plant => ({
+            id: plant.id,
+            name: plant.name,
+            type: plant.type,
+            location: plant.location,
+            moisture: plant.moisture,
+            lastWatered: plant.last_watered,
+            description: plant.description,
+            careRequirements: {
+              waterFrequency: plant.care_requirements?.water_frequency,
+              lightRequirement: plant.care_requirements?.light_requirement,
+              temperature: plant.care_requirements?.temperature,
+              humidity: plant.care_requirements?.humidity,
+            },
+            watering_history: plant.watering_history,
+            created_at: plant.created_at,
+          }));
+          setPlants(mappedPlants);
+        }
       }
       
       return { success: true, plant: result };
@@ -208,13 +232,30 @@ export const PlantProvider = ({ children }) => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       if (!token) {
+        console.log('[PLANTS-REFETCH] No auth token found');
         setPlants([]);
         return;
       }
 
       setLoading(true);
+      console.log('[PLANTS-REFETCH] Refetching plants from API...');
       const data = await plantsAPI.getAllPlants();
-      const mappedPlants = data.map(plant => ({
+      
+      console.log('[PLANTS-REFETCH] Raw API response:', JSON.stringify(data, null, 2));
+      console.log('[PLANTS-REFETCH] Data type:', typeof data, 'Is array?', Array.isArray(data));
+      
+      // Handle both array and paginated response
+      const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      
+      console.log('[PLANTS-REFETCH] Plant list after processing:', plantList.length, 'items');
+      
+      if (!Array.isArray(plantList)) {
+        console.warn('[PLANTS-REFETCH] Response is not an array:', data);
+        setPlants([]);
+        return;
+      }
+      
+      const mappedPlants = plantList.map(plant => ({
         id: plant.id,
         name: plant.name,
         type: plant.type,
@@ -231,10 +272,10 @@ export const PlantProvider = ({ children }) => {
         watering_history: plant.watering_history,
         created_at: plant.created_at,
       }));
-      console.log('[PLANTS] Refetched plants:', mappedPlants.length);
+      console.log('[PLANTS-REFETCH] Refetched plants:', mappedPlants.length);
       setPlants(mappedPlants);
     } catch (error) {
-      console.error('[PLANTS] Error refetching:', error);
+      console.error('[PLANTS-REFETCH] Error refetching:', error);
     } finally {
       setLoading(false);
     }

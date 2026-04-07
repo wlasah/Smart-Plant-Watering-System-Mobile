@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
 import styles from '../styles/CareScheduleScreenStyles';
 import { PlantContext } from '../context/PlantContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -19,6 +19,14 @@ const CareScheduleScreen = () => {
         const lastWatered = new Date(plant.lastWatered);
         const nextWatering = new Date(lastWatered.getTime() + daysBetweenWatering * 24 * 60 * 60 * 1000);
         const daysUntilDue = Math.ceil((nextWatering - new Date()) / (1000 * 60 * 60 * 24));
+        
+        console.log(`[SCHEDULE] ${plant.name}:`, {
+          lastWatered: lastWatered.toISOString(),
+          frequency: daysBetweenWatering,
+          nextWatering: nextWatering.toISOString(),
+          today: new Date().toISOString(),
+          daysUntilDue,
+        });
         
         return {
           ...plant,
@@ -44,8 +52,9 @@ const CareScheduleScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>📅 Care Schedule</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <Text style={styles.header}>📅 Care Schedule</Text>
 
       {/* Watering Schedule Section */}
       <View style={styles.section}>
@@ -84,7 +93,8 @@ const CareScheduleScreen = () => {
           onMonthChange={setSelectedMonth}
         />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
