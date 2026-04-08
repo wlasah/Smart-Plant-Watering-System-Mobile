@@ -8,7 +8,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
 import styles from '../styles/AddPlantScreenStyles';
 import { usePlants } from '../hooks/useAppHooks';
 
@@ -43,7 +42,7 @@ const AddPlantScreen = ({ navigation }) => {
 
     if (result.success) {
       Alert.alert('Success', `${formData.name} has been added!`);
-      router.back();
+      navigation.goBack();
     } else {
       Alert.alert('Error', result.error);
     }
@@ -54,7 +53,7 @@ const AddPlantScreen = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => navigation.goBack()}
         >
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
