@@ -1,12 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use your machine's IP address. Find it by running 'ipconfig' in PowerShell
-// Look for "IPv4 Address" (typically 192.168.x.x)
-// For Android emulator (MEmu): try 192.168.1.10 or 10.0.2.2
-// For physical phone on same WiFi: use YOUR_MACHINE_IP
-// For development on same machine: use localhost
-// IMPORTANT: Replace this with your actual machine IP from 'ipconfig'
-const API_BASE = 'http://192.168.1.10:8000';  // ← UPDATE THIS with your machine IP
+// Use environment variable if available, otherwise default to local IP
+// .env file should have: EXPO_PUBLIC_API_URL=https://smart-plant-backend-39w7.onrender.com
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:8000';
 const API_BASE_URL = `${API_BASE}/api`;
 
 /**
@@ -141,9 +137,9 @@ export const authAPI = {
   login: async (username, password) => {
     try {
       console.log(`[AUTH] Attempting login for user: ${username}`);
-      console.log(`[AUTH] Login endpoint: ${API_BASE}/api-token-auth/`);
+      console.log(`[AUTH] Login endpoint: ${API_BASE}/api/users/login/`);
       
-      const response = await fetch(`${API_BASE}/api-token-auth/`, {
+      const response = await fetch(`${API_BASE}/api/users/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

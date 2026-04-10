@@ -77,7 +77,7 @@ const RegisterScreen = ({ navigation }) => {
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={[styles.input, errors.username && styles.inputError]}
-            placeholder="Choose your username"
+            placeholder="top global yearner"
             value={username}
             onChangeText={setUsername}
             editable={!isLoading}
