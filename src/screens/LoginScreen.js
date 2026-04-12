@@ -119,7 +119,6 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.form}>
         <View style={styles.fieldContainer}>
-        <View style={styles.fieldContainer}>
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={[styles.input, errors.username && styles.inputError]}
@@ -131,8 +130,7 @@ const LoginScreen = ({ navigation }) => {
             autoCorrect={false}
             spellCheck={false}
           />
-          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
-          {!errors.username && <Text style={styles.hintText}>💡 Spaces are supported (e.g. "john doe")</Text>}
+          
         </View>
 
         <View style={styles.fieldContainer}>

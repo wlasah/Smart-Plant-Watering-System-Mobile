@@ -108,7 +108,7 @@ const RegisterScreen = ({ navigation }) => {
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={[styles.input, errors.username && styles.inputError]}
-            placeholder="top global yearner"
+            placeholder="enter a username"
             value={username}
             onChangeText={setUsername}
             editable={!isLoading}
@@ -116,8 +116,7 @@ const RegisterScreen = ({ navigation }) => {
             autoCorrect={false}
             spellCheck={false}
           />
-          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
-          {!errors.username && <Text style={styles.hintText}>💡 Spaces are supported (e.g. "john doe")</Text>}
+          
         </View>
 
         <View style={styles.fieldContainer}>
