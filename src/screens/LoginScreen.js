@@ -18,11 +18,13 @@ const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [loginError, setLoginError] = useState('');
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!username) {
+    if (!username.trim()) {
       newErrors.username = 'Username is required';
     }
 
@@ -41,7 +43,8 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       console.log('[LoginScreen] Starting login process...');
-      const result = await signIn(username, password);
+      setLoginError(''); // Clear previous error
+      const result = await signIn(username.trim(), password);
       
       console.log('[LoginScreen] Sign in result:', result);
       
@@ -52,11 +55,60 @@ const LoginScreen = ({ navigation }) => {
         console.log('[LoginScreen] Plants refetched successfully');
       } else {
         console.error('[LoginScreen] Login failed:', result.error);
-        Alert.alert('Login Failed', result.error);
+        // Set specific error message
+        let errorMessage = result.error || 'Invalid username or password';
+        
+        console.log('[LoginScreen] Raw error message:', errorMessage);
+        console.log('[LoginScreen] Checking error patterns...');
+        
+        // Check for specific error cases - be more comprehensive
+        const errorLower = errorMessage.toLowerCase();
+        
+        if (errorLower.includes('network') || errorLower.includes('connect') || errorLower.includes('fetch failed')) {
+          console.log('[LoginScreen] Detected as network error');
+          errorMessage = '❌ Network error. Cannot connect to server. Please check your connection.';
+        } else if (errorLower.includes('invalid') || errorLower.includes('incorrect') || errorLower.includes('wrong')) {
+          console.log('[LoginScreen] Detected as invalid credentials');
+          errorMessage = '❌ Invalid username or password. Please try again.';
+        } else if (errorLower.includes('not found') || errorLower.includes('does not exist')) {
+          console.log('[LoginScreen] Detected as user not found');
+          errorMessage = '❌ Username not found. Please check and try again.';
+        } else if (errorLower.includes('space') || errorLower.includes('character')) {
+          console.log('[LoginScreen] Detected as format error');
+          errorMessage = `❌ ${errorMessage}`;
+        } else {
+          // If we didn't match any pattern, prepend icon to the original message
+          console.log('[LoginScreen] No pattern matched, using original error');
+          if (!errorMessage.startsWith('❌')) {
+            errorMessage = `❌ ${errorMessage}`;
+          }
+        }
+        
+        setLoginError(errorMessage);
+        
+        // Also show alert for better visibility
+        Alert.alert(
+          '🔐 Login Failed',
+          errorMessage.replace(/❌ /, ''),
+          [
+            {
+              text: 'Try Again',
+              onPress: () => {
+                setPassword(''); // Clear password field
+              },
+            },
+            {
+              text: 'Sign Up',
+              onPress: () => navigation.navigate('Register'),
+            },
+          ]
+        );
       }
     } catch (err) {
       console.error('[LoginScreen] Unexpected error:', err);
-      Alert.alert('Error', 'An unexpected error occurred');
+      const errorMsg = '❌ An unexpected error occurred. Please try again.';
+      setLoginError(errorMsg);
+      Alert.alert('Error', errorMsg.replace(/❌ /, ''));
     }
   };
 
@@ -67,6 +119,7 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.form}>
         <View style={styles.fieldContainer}>
+        <View style={styles.fieldContainer}>
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={[styles.input, errors.username && styles.inputError]}
@@ -75,8 +128,11 @@ const LoginScreen = ({ navigation }) => {
             onChangeText={setUsername}
             editable={!isLoading}
             autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
           />
           {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
+          {!errors.username && <Text style={styles.hintText}>💡 Spaces are supported (e.g. "john doe")</Text>}
         </View>
 
         <View style={styles.fieldContainer}>
@@ -91,6 +147,13 @@ const LoginScreen = ({ navigation }) => {
           />
           {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         </View>
+
+        {loginError && (
+          <View style={styles.errorAlertBox}>
+            <Text style={styles.errorAlertTitle}>Login Failed</Text>
+            <Text style={styles.errorAlertMessage}>{loginError}</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}

@@ -81,10 +81,12 @@ export const AuthProvider = ({ children }) => {
     () => ({
       signIn: async (username, password) => {
         try {
-          console.log('[AUTH] Attempting login:', username);
+          // Trim username for consistency
+          const trimmedUsername = username.trim();
+          console.log('[AUTH] Attempting login:', trimmedUsername);
           
           // Call Django backend login endpoint
-          const response = await authAPI.login(username, password);
+          const response = await authAPI.login(trimmedUsername, password);
           
           console.log('[AUTH] Login successful, saving token');
           
@@ -108,7 +110,7 @@ export const AuthProvider = ({ children }) => {
             console.warn('[AUTH] Could not fetch user details, using basic data');
             
             await AsyncStorage.setItem('userData', JSON.stringify({
-              username,
+              username: trimmedUsername,
               id: null,
             }));
             
@@ -129,8 +131,13 @@ export const AuthProvider = ({ children }) => {
 
       signUp: async (username, email, password) => {
         try {
+          // Trim inputs for consistency
+          const trimmedUsername = username.trim();
+          const trimmedEmail = email.trim();
+          console.log('[AUTH] Attempting registration:', trimmedUsername);
+          
           // Call Django backend register endpoint
-          const response = await authAPI.register(username, email, password);
+          const response = await authAPI.register(trimmedUsername, trimmedEmail, password);
           
           // Store token and user data
           await AsyncStorage.setItem('auth_token', response.token);

@@ -20,6 +20,7 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [registerError, setRegisterError] = useState('');
 
   const validateForm = () => {
     const newErrors = {};
@@ -51,12 +52,42 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async () => {
     if (!validateForm()) return;
 
-    const result = await signUp(username, email, password);
-    if (result.success) {
-      // Refetch plants after successful registration
-      await refetchPlants();
-    } else {
-      Alert.alert('Registration Failed', result.error);
+    try {
+      setRegisterError('');
+      const result = await signUp(username.trim(), email.trim(), password);
+      if (result.success) {
+        // Refetch plants after successful registration
+        await refetchPlants();
+      } else {
+        let errorMessage = result.error || 'Registration failed';
+        
+        // Check for specific error cases
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          errorMessage = '❌ This username or email already exists. Please try another.';
+        } else if (errorMessage.toLowerCase().includes('invalid email')) {
+          errorMessage = '❌ Invalid email format. Please check and try again.';
+        } else if (errorMessage.toLowerCase().includes('password')) {
+          errorMessage = '❌ Password does not meet requirements. Please try another.';
+        }
+        
+        setRegisterError(errorMessage);
+        Alert.alert(
+          '📝 Registration Error',
+          errorMessage.replace(/❌ /, ''),
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setRegisterError('');
+              },
+            },
+          ]
+        );
+      }
+    } catch (err) {
+      const errorMsg = '❌ An unexpected error occurred. Please try again.';
+      setRegisterError(errorMsg);
+      Alert.alert('Error', errorMsg.replace(/❌ /, ''));
     }
   };
 
@@ -82,8 +113,11 @@ const RegisterScreen = ({ navigation }) => {
             onChangeText={setUsername}
             editable={!isLoading}
             autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
           />
           {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
+          {!errors.username && <Text style={styles.hintText}>💡 Spaces are supported (e.g. "john doe")</Text>}
         </View>
 
         <View style={styles.fieldContainer}>
@@ -95,6 +129,7 @@ const RegisterScreen = ({ navigation }) => {
             onChangeText={setEmail}
             editable={!isLoading}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -127,6 +162,13 @@ const RegisterScreen = ({ navigation }) => {
             <Text style={styles.errorText}>{errors.confirmPassword}</Text>
           )}
         </View>
+
+        {registerError && (
+          <View style={styles.errorAlertBox}>
+            <Text style={styles.errorAlertTitle}>Registration Error</Text>
+            <Text style={styles.errorAlertMessage}>{registerError}</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}

@@ -90,12 +90,18 @@ export const authAPI = {
    */
   register: async (username, email, password) => {
     try {
+      // Extra safety: trim values at API layer
+      let trimmedUsername = username.trim();
+      const trimmedEmail = email.trim();
+      
+      // NOW: Backend handles spaces! Don't convert them
+      console.log('[AUTH] Registering user:', trimmedUsername);
       const response = await fetch(`${API_BASE_URL}/users/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username,
-          email,
+          username: trimmedUsername,
+          email: trimmedEmail,
           password,
           password_confirm: password,
         }),
@@ -136,13 +142,17 @@ export const authAPI = {
    */
   login: async (username, password) => {
     try {
-      console.log(`[AUTH] Attempting login for user: ${username}`);
+      // Extra safety: trim username at API layer
+      let trimmedUsername = username.trim();
+      
+      // NOW: Backend handles spaces! Don't convert them
+      console.log(`[AUTH] Attempting login for user: ${trimmedUsername}`);
       console.log(`[AUTH] Login endpoint: ${API_BASE}/api/users/login/`);
       
       const response = await fetch(`${API_BASE}/api/users/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: trimmedUsername, password }),
       });
       
       console.log(`[AUTH] Response status: ${response.status}`);
@@ -174,13 +184,20 @@ export const authAPI = {
       return data;
     } catch (error) {
       console.error('[AUTH] Login error:', error);
-      if (error.message?.includes('Network')) {
+      console.error('[AUTH] Error status:', error.status);
+      console.error('[AUTH] Error message:', error.message);
+      console.error('[AUTH] Full error object:', JSON.stringify(error, null, 2));
+      
+      // Only treat as network error if it's actually a network error
+      if (error.status === 0 || error.message?.includes('fetch failed')) {
         throw {
           status: 0,
           message: 'Cannot connect to server. Make sure your phone is on the same WiFi network and Django is running.',
           error: error.message,
         };
       }
+      
+      // Re-throw other errors as-is so they can be properly handled
       throw error;
     }
   },

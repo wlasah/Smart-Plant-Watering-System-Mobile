@@ -52,6 +52,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 6,
   },
+  hintText: {
+    color: '#2196F3',
+    fontSize: 11,
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
+  errorAlertBox: {
+    backgroundColor: '#FFE5E5',
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6B6B',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+  },
+  errorAlertTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#B71C1C',
+    marginBottom: 4,
+  },
+  errorAlertMessage: {
+    fontSize: 12,
+    color: '#7F1D1D',
+    lineHeight: 18,
+  },
   button: {
     backgroundColor: '#4CAF50',
     borderRadius: 8,
