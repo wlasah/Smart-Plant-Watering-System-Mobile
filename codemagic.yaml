@@ -3,7 +3,7 @@ workflows:
     name: Android Release APK
     max_build_duration: 120
     environment:
-      java: 11
+      java: 17
     scripts:
       - name: Install dependencies
         script: npm install
