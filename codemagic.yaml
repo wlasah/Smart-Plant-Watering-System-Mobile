@@ -4,7 +4,6 @@ workflows:
     max_build_duration: 120
     environment:
       java: 11
-      ndk: 27.1.12297006
     scripts:
       - name: Install dependencies
         script: npm install
