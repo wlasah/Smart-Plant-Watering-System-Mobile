@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use environment variable if available, otherwise default to local IP
-// .env file should have: EXPO_PUBLIC_API_URL=https://smart-plant-backend-39w7.onrender.com
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:8000';
+// Use environment variable if available, otherwise default to Render backend
+// For development: set EXPO_PUBLIC_API_URL in .env to override
+// Default production URL is the deployed Render backend
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://smart-plant-backend-39w7.onrender.com';
 const API_BASE_URL = `${API_BASE}/api`;
 
 /**
