@@ -2,7 +2,6 @@
   "expo": {
     "name": "Smart Plant Watering System",
     "slug": "smart-plant-watering-system",
-    "icon": "./assets/SmartPlant_Logo.png",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
