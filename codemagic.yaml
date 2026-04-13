@@ -5,13 +5,11 @@ workflows:
     environment:
       java: 11
       ndk: 27.1.12297006
-      groups:
-        - google_play
     triggering:
       events:
         - push
       branch:
-        - main
+        pattern: main
     scripts:
       - name: Install dependencies
         script: npm install
