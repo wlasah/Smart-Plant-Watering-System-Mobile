@@ -58,12 +58,23 @@ export const AuthProvider = ({ children }) => {
         console.log('[AUTH] User data found:', !!userData);
         
         if (auth_token && userData) {
-          console.log('[AUTH] Token restored successfully');
-          dispatch({
-            type: 'RESTORE_TOKEN',
-            payload: auth_token,
-            user: JSON.parse(userData),
-          });
+          // Validate token by calling an authenticated endpoint
+          try {
+            const user = await authAPI.getCurrentUser();
+            console.log('[AUTH] Token validated successfully');
+            dispatch({
+              type: 'RESTORE_TOKEN',
+              payload: auth_token,
+              user: JSON.parse(userData),
+            });
+          } catch (validationError) {
+            console.warn('[AUTH] Token validation failed:', validationError.message);
+            // Token is invalid (expired or from different backend)
+            console.log('[AUTH] Clearing invalid token - user needs to login again');
+            await AsyncStorage.removeItem('auth_token');
+            await AsyncStorage.removeItem('userData');
+            dispatch({ type: 'RESTORE_TOKEN', payload: null, user: null });
+          }
         } else {
           console.log('[AUTH] No token found - user needs to login');
           dispatch({ type: 'RESTORE_TOKEN', payload: null, user: null });

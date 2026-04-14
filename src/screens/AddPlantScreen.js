@@ -42,7 +42,8 @@ const AddPlantScreen = ({ navigation }) => {
 
     if (result.success) {
       Alert.alert('Success', `${formData.name} has been added!`);
-      navigation.goBack();
+      // Navigate back to PlantListHome to refresh the list
+      navigation.navigate('PlantListHome');
     } else {
       Alert.alert('Error', result.error);
     }
