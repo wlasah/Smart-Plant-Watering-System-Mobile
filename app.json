@@ -6,14 +6,27 @@
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/SmartPlant_Logo.png",
+    "splash": {
+      "image": "./assets/SmartPlant_Logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.smartplant.watering"
+      "bundleIdentifier": "com.smartplant.watering",
+      "icon": "./assets/SmartPlant_Logo.png"
     },
     "android": {
-      "package": "com.smartplant.watering"
+      "package": "com.smartplant.watering",
+      "icon": "./assets/SmartPlant_Logo.png",
+      "splash": {
+        "image": "./assets/SmartPlant_Logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     },
     "plugins": [],
     "extra": {
