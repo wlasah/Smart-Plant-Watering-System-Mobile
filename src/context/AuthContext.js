@@ -176,7 +176,13 @@ export const AuthProvider = ({ children }) => {
           try {
             await authAPI.logout();
           } catch (e) {
-            console.warn('Logout API call failed:', e);
+            // 401 error is expected if token is already invalid/expired
+            // User is effectively logged out in that case
+            if (e.status === 401) {
+              console.log('Token already invalid - user was already logged out on server');
+            } else {
+              console.warn('Logout API call failed:', e);
+            }
           }
 
           // Clear stored data

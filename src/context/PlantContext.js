@@ -8,6 +8,26 @@ export const PlantProvider = ({ children }) => {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const normalizePlant = plant => ({
+    id: plant.id,
+    name: plant.name,
+    type: plant.type,
+    location: plant.location,
+    moisture: plant.moisture,
+    lastWatered: plant.last_watered || plant.created_at || new Date().toISOString(),
+    description: plant.description,
+    careRequirements: {
+      waterFrequency: plant.care_requirements?.water_frequency,
+      lightRequirement: plant.care_requirements?.light_requirement,
+      temperature: plant.care_requirements?.temperature,
+      humidity: plant.care_requirements?.humidity,
+    },
+    watering_history: plant.watering_history,
+    created_at: plant.created_at,
+  });
+
+  const mapPlantList = plantList => plantList.map(normalizePlant);
+
   // Fetch plants from backend on mount and every 30 seconds (only if logged in)
   useEffect(() => {
     const fetchPlants = async () => {
@@ -39,24 +59,7 @@ export const PlantProvider = ({ children }) => {
           return;
         }
         
-        // Map backend data to app format
-        const mappedPlants = plantList.map(plant => ({
-          id: plant.id,
-          name: plant.name,
-          type: plant.type,
-          location: plant.location,
-          moisture: plant.moisture,
-          lastWatered: plant.last_watered,
-          description: plant.description,
-          careRequirements: {
-            waterFrequency: plant.care_requirements?.water_frequency,
-            lightRequirement: plant.care_requirements?.light_requirement,
-            temperature: plant.care_requirements?.temperature,
-            humidity: plant.care_requirements?.humidity,
-          },
-          watering_history: plant.watering_history,
-          created_at: plant.created_at,
-        }));
+        const mappedPlants = mapPlantList(plantList);
         setPlants(mappedPlants);
         console.log('[PLANTS] Loaded', mappedPlants.length, 'plants');
       } catch (error) {
@@ -76,21 +79,17 @@ export const PlantProvider = ({ children }) => {
 
   const waterPlant = useCallback(async (plantId, notes = '') => {
     try {
-      const result = await plantsAPI.waterPlant(plantId, notes);
-      
-      // Update local state with new data
-      setPlants(prevPlants =>
-        prevPlants.map(plant => {
-          if (plant.id === plantId) {
-            return {
-              ...plant,
-              moisture: result.plant.moisture,
-              lastWatered: result.plant.last_watered,
-            };
-          }
-          return plant;
-        })
-      );
+      await plantsAPI.waterPlant(plantId, notes);
+
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        const data = await plantsAPI.getAllPlants();
+        const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+        if (Array.isArray(plantList)) {
+          setPlants(mapPlantList(plantList));
+        }
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Error watering plant:', error);
@@ -127,24 +126,7 @@ export const PlantProvider = ({ children }) => {
         const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
         
         if (Array.isArray(plantList)) {
-          const mappedPlants = plantList.map(plant => ({
-            id: plant.id,
-            name: plant.name,
-            type: plant.type,
-            location: plant.location,
-            moisture: plant.moisture,
-            lastWatered: plant.last_watered,
-            description: plant.description,
-            careRequirements: {
-              waterFrequency: plant.care_requirements?.water_frequency,
-              lightRequirement: plant.care_requirements?.light_requirement,
-              temperature: plant.care_requirements?.temperature,
-              humidity: plant.care_requirements?.humidity,
-            },
-            watering_history: plant.watering_history,
-            created_at: plant.created_at,
-          }));
-          setPlants(mappedPlants);
+          setPlants(mapPlantList(plantList));
         }
       }
       
@@ -203,10 +185,10 @@ export const PlantProvider = ({ children }) => {
     try {
       const stats = await plantsAPI.getStats();
       return {
-        totalPlants: stats.total_plants,
-        healthyPlants: stats.healthy,
-        needsAttention: stats.needing_water,
-        avgMoisture: Math.round(stats.average_moisture || 0),
+        totalPlants: stats.total_plants ?? stats.totalPlants ?? 0,
+        healthyPlants: stats.healthy_plants ?? stats.healthy ?? 0,
+        needsAttention: stats.plants_needing_water ?? stats.needing_water ?? 0,
+        avgMoisture: Math.round((stats.average_moisture ?? stats.averageMoisture ?? 0) || 0),
       };
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -255,23 +237,7 @@ export const PlantProvider = ({ children }) => {
         return;
       }
       
-      const mappedPlants = plantList.map(plant => ({
-        id: plant.id,
-        name: plant.name,
-        type: plant.type,
-        location: plant.location,
-        moisture: plant.moisture,
-        lastWatered: plant.last_watered,
-        description: plant.description,
-        careRequirements: {
-          waterFrequency: plant.care_requirements?.water_frequency,
-          lightRequirement: plant.care_requirements?.light_requirement,
-          temperature: plant.care_requirements?.temperature,
-          humidity: plant.care_requirements?.humidity,
-        },
-        watering_history: plant.watering_history,
-        created_at: plant.created_at,
-      }));
+      const mappedPlants = mapPlantList(plantList);
       console.log('[PLANTS-REFETCH] Refetched plants:', mappedPlants.length);
       setPlants(mappedPlants);
     } catch (error) {

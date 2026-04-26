@@ -9,14 +9,20 @@ const CareScheduleScreen = () => {
   const { plants } = useContext(PlantContext);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
+  const getValidDate = (dateValue, fallbackValue) => {
+    const parsed = new Date(dateValue || fallbackValue || Date.now());
+    return Number.isNaN(parsed.getTime()) ? new Date(fallbackValue || Date.now()) : parsed;
+  };
+
   // Sort plants by next watering date
   const getScheduledPlants = () => {
     return plants
       .map(plant => {
         // Parse watering frequency (e.g., "Every 7 days" -> 7)
         const frequencyMatch = plant.careRequirements?.waterFrequency?.match(/\d+/);
-        const daysBetweenWatering = frequencyMatch ? parseInt(frequencyMatch[0]) : 7;
-        const lastWatered = new Date(plant.lastWatered);
+        const daysBetweenWatering = frequencyMatch ? parseInt(frequencyMatch[0], 10) : 7;
+
+        const lastWatered = getValidDate(plant.lastWatered, plant.created_at);
         const nextWatering = new Date(lastWatered.getTime() + daysBetweenWatering * 24 * 60 * 60 * 1000);
         const daysUntilDue = Math.ceil((nextWatering - new Date()) / (1000 * 60 * 60 * 24));
         
