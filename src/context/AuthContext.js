@@ -15,12 +15,23 @@ export const AuthProvider = ({ children }) => {
             isLoading: false,
             user: action.user,
           };
+        case 'SIGN_IN_REQUEST':
+          return {
+            ...prevState,
+            isLoading: true,
+          };
         case 'SIGN_IN':
           return {
             ...prevState,
             isSignout: false,
             userToken: action.payload,
             user: action.user,
+            isLoading: false,
+          };
+        case 'SIGN_IN_FAILURE':
+          return {
+            ...prevState,
+            isLoading: false,
           };
         case 'SIGN_OUT':
           return {
@@ -28,6 +39,7 @@ export const AuthProvider = ({ children }) => {
             isSignout: true,
             userToken: null,
             user: null,
+            isLoading: false,
           };
         case 'SIGN_UP':
           return {
@@ -35,6 +47,7 @@ export const AuthProvider = ({ children }) => {
             isSignout: false,
             userToken: action.payload,
             user: action.user,
+            isLoading: false,
           };
       }
     },
@@ -91,6 +104,7 @@ export const AuthProvider = ({ children }) => {
   const authContext = React.useMemo(
     () => ({
       signIn: async (username, password) => {
+        dispatch({ type: 'SIGN_IN_REQUEST' });
         try {
           // Trim username for consistency
           const trimmedUsername = username.trim();
@@ -136,6 +150,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('[AUTH] Login failed:', error);
           const errorMessage = error.message || 'Login failed';
+          dispatch({ type: 'SIGN_IN_FAILURE' });
           return { success: false, error: errorMessage };
         }
       },

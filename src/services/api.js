@@ -3,8 +3,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Use environment variable if available, otherwise default to Render backend
 // For development: set EXPO_PUBLIC_API_URL in .env to override
 // Default production URL is the deployed Render backend
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://smart-plant-backend-39w7.onrender.com';
+const API_BASE = (process.env.EXPO_PUBLIC_API_URL || 'https://smart-plant-backend-39w7.onrender.com')
+  .trim()
+  .replace(/\/+$/g, '')
+  .replace(/\/api$/i, '');
 const API_BASE_URL = `${API_BASE}/api`;
+
+const buildUrl = (path) => {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${normalizedPath}`;
+};
 
 /**
  * Helper function to make API requests with authentication token
@@ -12,8 +20,9 @@ const API_BASE_URL = `${API_BASE}/api`;
 const fetchWithToken = async (endpoint, options = {}) => {
   try {
     const token = await AsyncStorage.getItem('auth_token');
+    const url = buildUrl(endpoint);
     
-    console.log(`[API] ${options.method || 'GET'} ${endpoint} - Token: ${token ? 'YES ✓' : 'MISSING ✗'}`);
+    console.log(`[API] ${options.method || 'GET'} ${url} - Token: ${token ? 'YES ✓' : 'MISSING ✗'}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -28,12 +37,12 @@ const fetchWithToken = async (endpoint, options = {}) => {
     
     let response;
     try {
-      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      response = await fetch(url, {
         ...options,
         headers,
       });
     } catch (networkError) {
-      console.error(`Network error on ${endpoint}:`, networkError);
+      console.error(`Network error on ${url}:`, networkError);
       throw {
         status: 0,
         message: 'Network request failed. Check your connection and server status.',
@@ -97,7 +106,7 @@ export const authAPI = {
       
       // NOW: Backend handles spaces! Don't convert them
       console.log('[AUTH] Registering user:', trimmedUsername);
-      const response = await fetch(`${API_BASE_URL}/users/register/`, {
+      const response = await fetch(buildUrl('/users/register/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -148,9 +157,9 @@ export const authAPI = {
       
       // NOW: Backend handles spaces! Don't convert them
       console.log(`[AUTH] Attempting login for user: ${trimmedUsername}`);
-      console.log(`[AUTH] Login endpoint: ${API_BASE}/api/users/login/`);
+      console.log(`[AUTH] Login endpoint: ${buildUrl('/users/login/')}`);
       
-      const response = await fetch(`${API_BASE}/api/users/login/`, {
+      const response = await fetch(buildUrl('/users/login/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: trimmedUsername, password }),
