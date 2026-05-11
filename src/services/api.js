@@ -1,9 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-// Use environment variable if available, otherwise default to Render backend
-// For development: set EXPO_PUBLIC_API_URL in .env to override
-// Default production URL is the deployed Render backend
-const API_BASE = (process.env.EXPO_PUBLIC_API_URL || 'https://smart-plant-backend-39w7.onrender.com')
+const expoConfig = Constants.expoConfig || Constants.manifest || {};
+const apiUrlFromConfig = expoConfig.extra?.EXPO_PUBLIC_API_URL;
+const apiUrl = apiUrlFromConfig || 'http://fast-api-g456.onrender.com';
+
+// Use environment variable from Expo config extra at runtime.
+const API_BASE = apiUrl
   .trim()
   .replace(/\/+$/g, '')
   .replace(/\/api$/i, '');
