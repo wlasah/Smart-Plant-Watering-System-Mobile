@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 
 const expoConfig = Constants.expoConfig || Constants.manifest || {};
 const apiUrlFromConfig = expoConfig.extra?.EXPO_PUBLIC_API_URL;
-const apiUrl = apiUrlFromConfig || 'http://fast-api-g456.onrender.com';
+const apiUrl = apiUrlFromConfig || 'https://fast-api-g456.onrender.com';
 
 // Use environment variable from Expo config extra at runtime.
 const API_BASE = apiUrl
