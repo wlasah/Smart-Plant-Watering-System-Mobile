@@ -135,6 +135,9 @@ const styles = StyleSheet.create({
   waterButton: {
     backgroundColor: '#4CAF50',
   },
+  deviceButton: {
+    backgroundColor: '#2196F3',
+  },
   deleteButton: {
     backgroundColor: '#FFE8E8',
   },

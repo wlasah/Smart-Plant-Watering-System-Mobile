@@ -11,6 +11,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import PlantListScreen from '../screens/PlantListScreen';
 import PlantDetailScreen from '../screens/PlantDetailScreen';
+import DeviceSettingsScreen from '../screens/DeviceSettingsScreen';
 import AddPlantScreen from '../screens/AddPlantScreen';
 import CareGuideScreen from '../screens/CareGuideScreen';
 import CareScheduleScreen from '../screens/CareScheduleScreen';
@@ -42,6 +43,7 @@ const DashboardStack = () => (
       component={PlantDetailScreen}
       options={{ animationEnabled: true }}
     />
+    <Stack.Screen name="DeviceSettings" component={DeviceSettingsScreen} />
   </Stack.Navigator>
 );
 
@@ -53,6 +55,7 @@ const PlantsStack = () => (
   >
     <Stack.Screen name="PlantListHome" component={PlantListScreen} />
     <Stack.Screen name="PlantDetail" component={PlantDetailScreen} />
+    <Stack.Screen name="DeviceSettings" component={DeviceSettingsScreen} />
     <Stack.Screen name="AddPlant" component={AddPlantScreen} />
   </Stack.Navigator>
 );

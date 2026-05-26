@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { plantsAPI } from '../services/api';
+import { plantsAPI, iotAPI } from '../services/api';
 
 export const PlantContext = createContext();
 
@@ -247,6 +247,33 @@ export const PlantProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchDeviceConfig = useCallback(async (deviceId) => {
+    try {
+      return await iotAPI.getDeviceConfig(deviceId);
+    } catch (error) {
+      console.error('[IOT] Failed to fetch device config for', deviceId, error);
+      return null;
+    }
+  }, []);
+
+  const saveDeviceConfig = useCallback(async (config) => {
+    try {
+      return await iotAPI.saveDeviceConfig(config);
+    } catch (error) {
+      console.error('[IOT] Failed to save device config', error);
+      return null;
+    }
+  }, []);
+
+  const fetchDeviceTelemetry = useCallback(async (deviceId, limit = 20) => {
+    try {
+      return await iotAPI.getTelemetry(deviceId, limit);
+    } catch (error) {
+      console.error('[IOT] Failed to fetch telemetry for', deviceId, error);
+      return [];
+    }
+  }, []);
+
   const value = {
     plants,
     loading,
@@ -256,6 +283,9 @@ export const PlantProvider = ({ children }) => {
     deletePlant,
     getPlantStats,
     refetchPlants,
+    fetchDeviceConfig,
+    saveDeviceConfig,
+    fetchDeviceTelemetry,
   };
 
   return (

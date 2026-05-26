@@ -295,6 +295,20 @@ export const plantsAPI = {
   },
 };
 
+export const iotAPI = {
+  getTelemetry: (deviceId = '', limit = 20) => {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (deviceId) params.set('device_id', deviceId);
+    return fetchWithToken(`/iot/telemetry/?${params.toString()}`);
+  },
+  getDeviceConfig: (deviceId) => fetchWithToken(`/iot/config/${encodeURIComponent(deviceId)}/`),
+  saveDeviceConfig: (config) =>
+    fetchWithToken('/iot/config/', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    }),
+};
+
 /**
  * Watering History API endpoints
  */
@@ -315,4 +329,5 @@ export default {
   authAPI,
   plantsAPI,
   historyAPI,
+  iotAPI,
 };

@@ -149,6 +149,13 @@ const PlantDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.actionButton, styles.deviceButton]}
+          onPress={() => navigation.navigate('DeviceSettings', { plant })}
+        >
+          <Text style={styles.actionButtonText}>⚙️ Device Settings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={handleDelete}
         >
