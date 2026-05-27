@@ -6,7 +6,7 @@ workflows:
       java: 17
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: npm install --legacy-peer-deps
       - name: Set up Expo
         script: |
           npm install -g eas-cli
