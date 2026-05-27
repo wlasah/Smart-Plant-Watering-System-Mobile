@@ -3,7 +3,24 @@ import Constants from 'expo-constants';
 
 const expoConfig = Constants.expoConfig || Constants.manifest || {};
 const apiUrlFromConfig = expoConfig.extra?.EXPO_PUBLIC_API_URL;
-const apiUrl = apiUrlFromConfig || 'https://fast-api-g456.onrender.com';
+
+const localExpoHost = (() => {
+  if (apiUrlFromConfig) return null;
+
+  const hostString =
+    Constants.manifest?.debuggerHost ||
+    Constants.manifest2?.hostUri ||
+    Constants.manifest2?.debuggerHost;
+
+  if (!hostString) return null;
+
+  const host = hostString.split(':').slice(0, -1).join(':');
+  if (!host) return null;
+
+  return `http://${host}:8001`;
+})();
+
+const apiUrl = apiUrlFromConfig || localExpoHost || 'https://fast-api-g456.onrender.com';
 
 // Use environment variable from Expo config extra at runtime.
 const API_BASE = apiUrl
@@ -11,6 +28,8 @@ const API_BASE = apiUrl
   .replace(/\/+$/g, '')
   .replace(/\/api$/i, '');
 const API_BASE_URL = `${API_BASE}/api`;
+
+console.log(`[API] Using backend base URL: ${API_BASE_URL}`);
 
 const buildUrl = (path) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -307,7 +326,19 @@ export const iotAPI = {
       method: 'POST',
       body: JSON.stringify(config),
     }),
+  sendDeviceCommand: (command) =>
+    fetchWithToken('/iot/commands/', {
+      method: 'POST',
+      body: JSON.stringify(command),
+    }),
+  getDeviceCommands: (deviceId) => fetchWithToken(`/iot/commands/${encodeURIComponent(deviceId)}/`),
+  ackDeviceCommand: (commandId) =>
+    fetchWithToken(`/iot/commands/${commandId}/ack/`, {
+      method: 'POST',
+    }),
 };
+
+export { API_BASE_URL };
 
 /**
  * Watering History API endpoints

@@ -33,7 +33,10 @@ const PlantDetailScreen = ({ route, navigation }) => {
     setWatering(false);
     
     if (result.success) {
-      Alert.alert('Success', `${plant.name} has been watered! 💧`);
+      Alert.alert(
+        'Success',
+        `${plant.name} manual water command sent. Moisture will update when the sensor reports.`
+      );
     } else {
       Alert.alert('Error', result.error);
     }

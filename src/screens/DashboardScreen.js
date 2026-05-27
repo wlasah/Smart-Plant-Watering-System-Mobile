@@ -61,7 +61,10 @@ const DashboardScreen = ({ navigation }) => {
   const handleWaterPlant = async (plantId) => {
     const result = await waterPlant(plantId);
     if (result.success) {
-      Alert.alert('Success', 'Plant watered! 💧');
+      Alert.alert(
+        'Success',
+        'Manual water command sent. Moisture will update once the sensor reports back.'
+      );
       await updateStats();
     } else {
       Alert.alert('Error', result.error);

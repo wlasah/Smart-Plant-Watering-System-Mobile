@@ -122,7 +122,7 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={[styles.input, errors.username && styles.inputError]}
-            placeholder="lawrence gwapo"
+            placeholder="Enter your username"
             value={username}
             onChangeText={setUsername}
             editable={!isLoading}
