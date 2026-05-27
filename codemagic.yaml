@@ -7,6 +7,15 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install --legacy-peer-deps --no-optional --no-audit
+      - name: Verify dependencies
+        script: |
+          if [ ! -d "node_modules/react-native" ]; then
+            echo "ERROR: react-native not installed"
+            exit 1
+          fi
+          if [ ! -f "node_modules/expo-modules-core/src/index.ts" ]; then
+            echo "WARNING: expo-modules-core incomplete, continuing anyway"
+          fi
       - name: Set up Expo
         script: |
           npm install -g eas-cli
