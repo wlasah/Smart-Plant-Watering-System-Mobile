@@ -9,12 +9,19 @@ npm install
 ```
 *Takes ~2-3 minutes depending on internet speed*
 
-### 2. Start the App
+### 2. Configure Backend URL
+Open `.env` and set:
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_BACKEND_IP>:8001
+```
+Use the backend machine's LAN IP when testing from another device.
+
+### 3. Start the App
 ```bash
 npm start
 ```
 
-### 3. Open in Expo Go
+### 4. Open in Expo Go
 - **Android**: Scan QR code with Expo Go app
 - **iOS**: Scan QR code with camera, tap "Open in Expo Go"
 - **Web**: Press `w` in terminal

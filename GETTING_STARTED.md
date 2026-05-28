@@ -29,7 +29,14 @@ npm install
 
 **Expected output**: `added XXX packages` (takes 2-5 minutes)
 
-### Step 2: Start the App
+### Step 2: Configure Backend URL
+Open `.env` and set the backend host:
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_BACKEND_IP>:8001
+```
+Use the backend machine's LAN IP when your mobile device or emulator runs on another machine.
+
+### Step 3: Start the App
 ```powershell
 npm start
 ```

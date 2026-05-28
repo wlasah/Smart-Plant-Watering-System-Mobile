@@ -91,6 +91,21 @@ await AsyncStorage.clear();
 
 ---
 
+## Backend URL Configuration
+
+The mobile app uses `EXPO_PUBLIC_API_URL` from `.env` and `app.config.js`.
+
+Set the backend host before running the app:
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_BACKEND_IP>:8001
+```
+
+- Use the backend machine's LAN IP for devices on a separate computer.
+- Use `http://localhost:8001` only when testing on the same machine or emulator.
+- Restart Expo after changing `.env`.
+
+---
+
 ## File Organization
 
 ```

@@ -1,254 +1,162 @@
-# 🌱 Smart Plant Mobile App
+# 🌱 Smart Plant Watering Mobile App
 
-A React Native mobile application built with Expo for managing and caring for your plants on the go.
+A React Native mobile application built with Expo for monitoring plants, viewing moisture updates, and managing watering actions.
 
-## Features (Phase 1 MVP)
+## Overview
 
-### ✅ Authentication
-- User registration with email and password
-- Login functionality
-- Session persistence using AsyncStorage
-- Logout capability
+This mobile app is part of the Smart Plant Watering System. It connects to the backend API to:
+- Authenticate users
+- Show plant moisture levels and health status
+- Display plant details and watering history
+- Send device telemetry requests
+- Manage plant watering commands
 
-### ✅ Dashboard
-- **System Overview**: Quick visual status of all plants
-  - Total plants count
-  - Healthy plants count
-  - Plants needing attention
-  - Average moisture level
-- **Quick Actions**: View all plants, access care guide
-- **Plants Needing Water**: Display plants with low moisture
-- **Recently Watered**: Show plants with highest moisture
+## Key Features
 
-### ✅ Plant Management
-- **View All Plants**: List view with search and filter options
-  - Search by plant name, location, or type
-  - Filter by status (Healthy/Needs Water/All)
-  - View count of matching plants
-- **Plant Details**: Individual plant information
-  - Moisture level with visual progress bar
-  - Last watered timestamp
-  - Care requirements
-  - Watering history (last 5 waterings)
-  - Delete plant option
+- Authentication: login, registration, logout, token persistence
+- Dashboard: plant statistics, moisture summary, alerts
+- Plant list: searchable and filterable plant cards
+- Plant detail: moisture gauge, care details, manual water action
+- IoT device telemetry support via backend API
+- Local state management with React Context
+- Notifications for watering reminders and alerts
 
-### ✅ Quick Water Button
-- One-tap watering from plant card
-- Instant moisture increase (simulated)
-- Watering history logging
-- Confirmation feedback
+## Prerequisites
 
-### ✅ Care Guide
-- Comprehensive plant care tips
-- Watering best practices
-- Light requirements
-- Temperature recommendations
-- Humidity tips
-- Fertilizing guide
-- Common problems & solutions
-
-### ✅ Push Notifications
-- Notification permissions setup
-- Scheduled watering reminders
-- Plant health alerts
-- Test notification system
-
-## Installation & Setup
-
-### Prerequisites
-- Node.js (v14+)
+- Node.js 14+ (recommended)
 - npm or yarn
 - Expo CLI: `npm install -g expo-cli`
-- Expo Go app on your mobile device (iOS/Android)
+- Expo Go mobile app for Android/iOS
 
-### Setup Steps
+## Setup
 
-1. **Navigate to project directory**
-```bash
-cd "Smart-Plant-Watering-System-Mobile"
+1. Open a terminal in the mobile project:
+   ```bash
+   cd e:\Download\appdev\Smart-Plant-Watering-System-Mobile
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure backend URL:
+   - Open `.env`
+   - Set `EXPO_PUBLIC_API_URL` to your backend host, for example:
+     ```env
+     EXPO_PUBLIC_API_URL=http://192.168.1.10:8001
+     ```
+   - If you use a different machine or network, update this IP to match the backend host.
+
+4. Start Expo:
+   ```bash
+   npm start
+   ```
+
+5. Open the app with Expo Go or run on emulator:
+   ```bash
+   npm run android
+   npm run ios
+   npm run web
+   ```
+
+## Backend Configuration
+
+The mobile app reads the backend address from `.env` via Expo config.
+
+Create or update `.env` with your backend host:
+
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.10:8001
 ```
 
-2. **Install dependencies**
-```bash
-npm install
-```
+If the backend runs on another device, set this to the backend machine's local IP address.
 
-3. **Start Expo development server**
-```bash
-npm start
-```
+### Optional Backend URL Auto-Detect
 
-Or use specific commands:
-```bash
-npm run android  # For Android Emulator
-npm run ios      # For iOS Simulator
-npm run web      # For Web Browser
-```
+To make cloning this project easier for other devices:
+- Keep `.env` out of version control by using `.gitignore`.
+- Each developer or tester should set their own `EXPO_PUBLIC_API_URL`.
+- Use the LAN IP of the backend machine when the app and backend are on different devices.
+- If you are testing in a simulator/emulator on the same machine, `http://localhost:8001` may work.
+- Restart Expo after changing `.env`.
 
-4. **Open in Expo Go**
-   - Scan the QR code with Expo Go app (Android)
-   - Press "i" for iOS simulator or "w" for web
-   - Or use `expo://` link in Expo Go
+Example `.env` for a cloned project:
 
-### Demo Account
-For testing without creating an account:
-- Email: `demo@example.com`
-- Password: `demo123`
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_LOCAL_IP>:8001
+``` 
+
+## Recommended Workflow
+
+1. Start your backend API (FastAPI or Django) on the host machine.
+2. Make sure the mobile device and backend are on the same network.
+3. Use the backend IP address in `.env`.
+4. Restart Expo after changing `.env`.
 
 ## Project Structure
 
 ```
-src/
-├── screens/              # Screen components
-│   ├── LoginScreen.js
-│   ├── RegisterScreen.js
-│   ├── DashboardScreen.js
-│   ├── PlantListScreen.js
-│   ├── PlantDetailScreen.js
-│   ├── AddPlantScreen.js
-│   └── CareGuideScreen.js
-├── components/          # Reusable components
-│   ├── PlantCard.js
-│   └── StatsCard.js
-├── context/            # Context for state management
-│   ├── AuthContext.js
-│   └── PlantContext.js
-├── hooks/              # Custom hooks
-│   └── useAppHooks.js
-├── navigation/         # Navigation setup
-│   └── RootNavigator.js
-├── utils/              # Utility functions
-│   ├── helpers.js
-│   └── notificationService.js
-├── styles/             # Global styles (if needed)
-└── App.js              # Entry point
+Smart-Plant-Watering-System-Mobile/
+├── App.js
+├── app.config.js
+├── src/
+│   ├── components/            # reusable UI components
+│   ├── context/               # app-wide context providers
+│   ├── hooks/                 # custom hooks
+│   ├── navigation/            # React Navigation setup
+│   ├── screens/               # app screens
+│   ├── services/              # backend API service layer
+│   ├── styles/                # shared styles
+│   └── utils/                 # helper functions
+├── .env                      # local environment config
+├── package.json
+└── README.md
 ```
 
-## Data Persistence
+## Important Files
 
-All data is stored locally using **AsyncStorage**:
-- User credentials (users list)
-- User session token
-- User data
-- Plant information
-- Watering history
-- Notification preferences
+- `src/services/api.js` — backend request helpers and API endpoints
+- `src/context/PlantContext.js` — plant data fetching and refresh logic
+- `src/screens/DashboardScreen.js` — main dashboard UI
+- `src/screens/PlantDetailScreen.js` — detail view for each plant
+- `src/screens/DeviceSettingsScreen.js` — device telemetry and config
 
-## Navigation Flow
+## Suggested Improvements
 
-### Unauthenticated Users
+- Auto-detect backend host from device network
+- Add live telemetry polling for device data
+- Improve offline support and sync
+- Add user profile management
+- Add camera/photo support for plants
+
+## Commands
+
+```bash
+npm install
+npm start
+npm run android
+npm run ios
+npm run web
 ```
-Login Screen
-    ↓
-Register Screen (optional)
-    ↓
-(Success) → Authenticated
-```
-
-### Authenticated Users (Bottom Tab Navigation)
-```
-├── Home Tab
-│   ├── Dashboard
-│   └── Plant Detail
-├── Plants Tab
-│   ├── Plant List
-│   ├── Plant Detail
-│   └── Add Plant
-└── Guide Tab
-    └── Care Guide
-```
-
-## Key Hooks & Context
-
-### useAuth()
-- `signIn(email, password)`: Login user
-- `signUp(name, email, password)`: Register new user
-- `signOut()`: Logout user
-- State: `userToken`, `user`, `isLoading`
-
-### usePlants()
-- `waterPlant(plantId)`: Water a plant
-- `addPlant(plantData)`: Add new plant
-- `updatePlant(plantId, updates)`: Update plant info
-- `deletePlant(plantId)`: Remove plant
-- `getPlantStats()`: Get dashboard statistics
-- State: `plants`, `loading`
-
-## Notifications
-
-The app includes push notification support via Expo Notifications:
-- Request notification permissions on app start
-- Schedule reminders for plants needing water
-- Show alerts for plant health issues
-- Cancel old reminders when plants are watered
-
-## Styling
-
-- **Color Scheme**:
-  - Primary: `#4CAF50` (Green)
-  - Healthy: `#4CAF50` (Green)
-  - Good: `#87CEEB` (Sky Blue)
-  - Warning: `#FF6B6B` (Red)
-  - Neutral: `#FFD700` (Gold)
-
-- **Components**: Native React Native components with custom styling
-- **Icons**: Emoji-based icons for simplicity
-
-## Current demo data
-
-The app comes with demo plants:
-1. Monstera Deliciosa (Living Room)
-2. Pothos Golden (Bedroom)
-3. Snake Plant (Office)
-
-## Future Enhancements (Phase 2+)
-
-- Photo capture & plant photos
-- Advanced analytics & charts
-- Family/friend sharing
-- Multiple watering schedules
-- Offline mode with sync
-- Camera-based plant health detection
-- Watering reminders via push notifications
-- Dark mode
-- Multiple languages
-- Integration with smart irrigation systems
 
 ## Troubleshooting
 
-### Dependencies not installing
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
+### Can’t login or register
+- Make sure `.env` backend URL matches the backend host IP
+- Ensure the backend server is running and reachable
+- Use the same WiFi network for mobile device and backend machine
+- Restart Expo after `.env` changes
 
-### Expo Go connection issues
-- Ensure device and computer are on same WiFi
-- Check firewall settings
-- Try LAN connection: `expo start --localhost`
-
-### AsyncStorage issues
-- Clear app data and reinstall
-- Check permissions in app.json
-
-## Development Commands
-
-```bash
-npm start              # Start Expo server
-npm run android        # Start Android emulator
-npm run ios           # Start iOS simulator
-npm run web           # Start web version
-npm test              # Run tests (if configured)
-```
-
-## License
-
-This project is part of the Smart Plant Watering System. See parent README for details.
+### Backend URL issues
+- If using `localhost`, use the computer’s LAN IP instead
+- Example: `http://192.168.1.10:8001`
+- For Android emulator, use the correct emulator host if needed
 
 ## Support
 
-For issues or questions, refer to the main project documentation or create an issue in the repository.
+If you need help, check the parent repo documentation and backend README for backend setup.
 
 ---
 
-**Made with 🌱 for plant lovers**
+Built for fast local testing and smart plant care.

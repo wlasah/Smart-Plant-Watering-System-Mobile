@@ -1,254 +1,181 @@
-# Mobile App - Backend Integration Guide
+﻿# Mobile App - Backend Integration Guide
 
-## ✅ What's Been Updated
+## Overview
 
-Your mobile app has been updated to connect to the Django backend instead of using local AsyncStorage.
+This guide explains how to configure the Smart Plant Watering mobile app to connect to a backend API and how to make the setup clone-friendly for other developers.
 
-### Files Modified:
-1. **`src/services/api.js`** - New API service file
-2. **`src/context/AuthContext.js`** - Updated to use backend authentication
-3. **`src/context/PlantContext.js`** - Updated to use backend API for plants
+## Backend URL Configuration
 
----
+The mobile app reads the backend URL from `.env` using `EXPO_PUBLIC_API_URL`.
 
-## 🔧 Configuration
+Open `Smart-Plant-Watering-System-Mobile/.env` and set:
 
-### Important: Update Backend URL
-
-Before running the mobile app, you need to configure the correct backend URL.
-
-1. Open: `src/services/api.js`
-2. Find this line (around line 5):
-```javascript
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_BACKEND_IP>:8001
 ```
 
-3. **For local development on same machine:**
-   - Keep it as `http://127.0.0.1:8000/api` (only if testing on Android emulator on same machine)
+## Recommended Setup for Cloned Repositories
 
-4. **For physical device or remote machine:**
-   - Replace with your machine's IP address
-   - Find IP by running in PowerShell: `ipconfig`
-   - Look for "IPv4 Address" (e.g., `192.168.100.5`)
-   - Change to: `http://192.168.100.5:8000/api`
+When someone clones this repo:
 
----
+1. Copy or create `Smart-Plant-Watering-System-Mobile/.env`.
+2. Set `EXPO_PUBLIC_API_URL` to the backend machine's LAN IP.
+3. Do not commit `.env` to version control.
+4. Restart Expo after updating `.env`.
 
-## 🚀 Features
+Example:
 
-### Authentication
-- ✅ Login with username and password
-- ✅ Register new user accounts
-- ✅ Automatic token storage
-- ✅ Logout and token cleanup
-
-### Plants Management
-- ✅ Fetch all plants from backend
-- ✅ Create new plants
-- ✅ Update plant information
-- ✅ Delete plants
-- ✅ Water plants (record watering)
-- ✅ Get plant statistics
-
-### Auto-Refresh
-- ✅ Plants list auto-refreshes every 30 seconds
-- ✅ Always synced with backend
-
----
-
-## 📝 Usage in Components
-
-### Login Screen
-```javascript
-import { useAuth } from '../hooks/useAppHooks';
-
-export const LoginScreen = () => {
-  const { signIn } = useAuth();
-  
-  const handleLogin = async (username, password) => {
-    const result = await signIn(username, password);
-    if (result.success) {
-      // Navigate to main app
-    } else {
-      Alert.alert('Login Failed', result.error);
-    }
-  };
-  
-  // ... rest of component
-};
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.10:8001
 ```
 
-### Get Plants
-```javascript
-import { usePlants } from '../hooks/useAppHooks';
-import { useFocusEffect } from '@react-navigation/native';
+## Local Device Rules
 
-export const PlantsScreen = () => {
-  const { plants, loading, getPlantStats } = usePlants();
-  
-  // Fetch stats when screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      getPlantStats();
-    }, [getPlantStats])
-  );
-  
-  if (loading) return <ActivityIndicator />;
-  
-  return (
-    <FlatList
-      data={plants}
-      renderItem={({ item }) => <PlantCard plant={item} />}
-    />
-  );
-};
+- **Physical mobile device on same Wi-Fi**: use the backend host's LAN IP.
+- **Simulator/emulator on the same machine**: `http://localhost:8001` may work, but using the LAN IP is safer.
+- **Android emulator**: if `localhost` does not work, try `http://10.0.2.2:8001`.
+- **Expo tunnel**: use `npm start -- --tunnel` if your phone and computer are not on the same network.
+
+## Why this is important
+
+Hardcoding `localhost` breaks the app when the backend runs on a different machine. A clone-friendly setup means each developer or tester can use their own backend IP without changing source code.
+
+## Running the Mobile App
+
+```bash
+cd "e:\Download\appdev\Smart-Plant-Watering-System-Mobile"
+npm install
+npm start
 ```
 
-### Water a Plant
-```javascript
-import { useAlert } from '@react-native-alert';
+Then open the app in Expo Go or an emulator.
 
-const { waterPlant } = usePlants();
+---
 
-const handleWaterPlant = async (plantId) => {
-  const result = await waterPlant(plantId, 'Watered plants today');
-  if (result.success) {
-    Alert.alert('Success', 'Plant watered! 💧');
-  } else {
-    Alert.alert('Error', result.error);
-  }
-};
+# FastAPI Backend - Complete Guide
+
+## Overview
+
+This backend service handles IoT telemetry, plant data, user authentication, and mobile/web integration for the Smart Plant Watering System.
+
+## Starting FastAPI Locally
+
+```bash
+cd "e:\Download\appdev\fast-api"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
-### Add New Plant
-```javascript
-const { addPlant } = usePlants();
+Once running, verify:
+- `http://localhost:8001`
+- `http://localhost:8001/docs`
+- `http://localhost:8001/redoc`
 
-const handleAddPlant = async (plantData) => {
-  const result = await addPlant({
-    name: 'Monstera',
-    type: 'Tropical Plant',
-    location: 'Living Room',
-    careRequirements: {
-      waterFrequency: 'Every 7 days',
-      lightRequirement: 'Bright indirect light',
-      temperature: '68-86°F'
-    }
-  });
-  
-  if (result.success) {
-    Alert.alert('Success', 'Plant added!');
-  }
-};
+## Backend URL and Device Setup
+
+If other devices connect to this backend, use the backend machine's LAN IP in the frontend/mobile apps.
+
+### Web app
+Set this in `Smart-Plant-Watering-System/.env.development` or `.env.local`:
+
+```env
+REACT_APP_API_URL=http://<YOUR_BACKEND_IP>:8001
 ```
 
----
+### Mobile app
+Set this in `Smart-Plant-Watering-System-Mobile/.env`:
 
-## ⚙️ How It Works
-
-### Authentication Flow
-1. User enters username and password
-2. App calls `authAPI.login(username, password)`
-3. Backend verifies and returns token
-4. Token is stored in AsyncStorage
-5. Subsequent requests include token in Authorization header
-
-### Plant Operations
-1. App calls `plantsAPI.getPlants()`
-2. API helper adds token to request
-3. Backend validates token and returns user's plants
-4. Plants are stored in React state
-5. UI updates automatically
-
-### Error Handling
-All API errors are caught and returned as objects:
-```javascript
-{
-  success: false,
-  error: 'Error message here'
-}
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_BACKEND_IP>:8001
 ```
 
+### If using a device on the same machine
+- Web: `http://localhost:8001`
+- Mobile emulator: `http://localhost:8001` may work
+- Android emulator: `http://10.0.2.2:8001` may be required
+
+### Use LAN IP for physical devices
+The safest option for remote devices is:
+
+```env
+http://192.168.1.10:8001
+```
+
+## API Documentation
+
+Use the built-in docs:
+- `http://localhost:8001/docs`
+- `http://localhost:8001/redoc`
+
+## Switching Between Backends
+
+In the frontend and mobile apps, change the base URL to point to the backend you want to use.
+
+- Web app: `REACT_APP_API_URL`
+- Mobile app: `EXPO_PUBLIC_API_URL`
+
+Example for FastAPI:
+
+```env
+REACT_APP_API_URL=http://192.168.1.10:8001
+EXPO_PUBLIC_API_URL=http://192.168.1.10:8001
+```
+
+Example if using Django instead:
+
+```env
+REACT_APP_API_URL=http://192.168.1.10:8000/api
+EXPO_PUBLIC_API_URL=http://192.168.1.10:8000/api
+```
+
+## Database
+
+- Default: SQLite at `sqlite:///./fastapi.db`
+- For local development, the database file is created automatically.
+- If you need a fresh start, stop the server, delete `fastapi.db`, and restart FastAPI.
+
+## Authentication
+
+Protected calls require the `Authorization` header:
+
+```http
+Authorization: Token <your_token_here>
+```
+
+## Deployment Notes
+
+- Keep `HOST=0.0.0.0` in `.env` so the backend is reachable from the local network.
+- For Render or cloud deployment, set `PORT` based on the host environment.
+- Add frontend origins to `CORS_ORIGINS` if using separate web/mobile hosts.
+
+## Common Troubleshooting
+
+### Backend access problems
+- Confirm `uvicorn` is running on `0.0.0.0:8001`
+- Use the host machine's LAN IP from other devices
+- Make sure firewall allows port `8001`
+
+### CORS errors
+- Add frontend origin to `CORS_ORIGINS`
+- Example:
+  `CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://192.168.1.10:3000`
+
+### Mobile connection issues
+- Set `EXPO_PUBLIC_API_URL` to the backend host LAN IP
+- Restart Expo after changing `.env`
+- Use tunnel mode if network restrictions exist
+
+## Recommended Local Setup for Clones
+
+1. Clone the repo.
+2. Create `fast-api/.env` from `.env.example`.
+3. Set `HOST=0.0.0.0` and `PORT=8001`.
+4. Confirm `CORS_ORIGINS` includes any frontend origins.
+5. Start the backend.
+6. In the web app and mobile app, set the backend URL to the backend host IP.
+
 ---
 
-## 🐛 Testing
-
-### Test Backend Connection
-
-1. **Check if Django server is running:**
-   - Visit `http://127.0.0.1:8000/admin/` in browser
-   - Should see Django admin login
-
-2. **Test API endpoint:**
-   ```bash
-   curl http://127.0.0.1:8000/api/users/me/
-   ```
-   Should return 401 (expected, no token provided)
-
-3. **Check logs:**
-   - Watch Django terminal for errors and requests
-
----
-
-## 📚 Default Test User
-
-Created for testing:
-- **Username**: `user1`
-- **Password**: `TestPass123`
-- **Token**: Use Thunder Client to get token (see django-backend docs)
-
----
-
-## ⚠️ Important Notes
-
-1. **AsyncStorage Still Used For:**
-   - Token storage
-   - User data cache
-
-2. **NO MORE LOCAL DEMO DATA:**
-   - App starts empty until user logs in
-   - All data comes from backend
-   - Create/update/delete syncs to backend
-
-3. **Internet Required:**
-   - Mobile app now requires backend connection
-   - Works on same network or VPN
-
-4. **Auto-Refresh:**
-   - Plants refresh every 30 seconds
-   - Use `useFocusEffect` to refresh on screen focus
-
----
-
-## 🆘 Troubleshooting
-
-### "Authentication credentials were not provided"
-- Check if token is saved in AsyncStorage
-- Verify token in Authorization header
-- Re-login if token expired
-
-### "Network request failed"
-- Check backend URL in `src/services/api.js`
-- Verify Django server is running
-- Test with Thunder Client first
-- Check firewall/Wi-Fi permissions
-
-### "Plant not found" or 404 errors
-- Ensure you're logged in with correct user
-- Plants belong to specific users (not shared)
-- Check Django admin that plant exists
-
-### Data not updating
-- Check browser console for errors
-- Watch Django terminal for error messages
-- Verify token is valid
-- Try refreshing screen
-
----
-
-## 📞 Need Help?
-
-See these files for more info:
-- Django API docs: `django-backend/API_DOCUMENTATION.md`
-- Integration guide: `django-backend/INTEGRATION_GUIDE.md`
-- This app's updated contexts in `src/context/`
+Generated for project consistency and clone-friendly local development.
