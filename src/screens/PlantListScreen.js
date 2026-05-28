@@ -14,10 +14,11 @@ import PlantCard from '../components/PlantCard';
 import { searchPlants, filterPlantsByStatus } from '../utils/helpers';
 
 const PlantListScreen = ({ navigation }) => {
-  const { plants, waterPlant } = usePlants();
+  const { plants, waterPlant, refetchPlants, loading } = usePlants();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredPlants = useMemo(() => {
     let result = plants;
@@ -36,6 +37,19 @@ const PlantListScreen = ({ navigation }) => {
     if (result.success) {
       // Reset filter to 'all' to show the updated plant
       setFilterStatus('all');
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      console.log('[PlantListScreen] Manual refresh triggered');
+      await refetchPlants();
+      console.log('[PlantListScreen] Refresh complete');
+    } catch (error) {
+      console.error('[PlantListScreen] Refresh error:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -136,12 +150,21 @@ const PlantListScreen = ({ navigation }) => {
         <Text style={styles.resultsText}>
           {filteredPlants.length} {filteredPlants.length === 1 ? 'plant' : 'plants'}
         </Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate('AddPlant')}
-        >
-          <Text style={styles.addButtonText}>➕ Add Plant</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <Text style={styles.addButtonText}>{isRefreshing ? '⟳...' : '⟳'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => navigation.navigate('AddPlant')}
+          >
+            <Text style={styles.addButtonText}>➕ Add Plant</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

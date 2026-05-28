@@ -62,6 +62,11 @@ export const PlantProvider = ({ children }) => {
         const mappedPlants = mapPlantList(plantList);
         setPlants(mappedPlants);
         console.log('[PLANTS] Loaded', mappedPlants.length, 'plants');
+        
+        // Log each plant's moisture
+        mappedPlants.forEach(p => {
+          console.log(`[PLANTS] Plant: ${p.name} (ID: ${p.id}) - Moisture: ${p.moisture}%`);
+        });
       } catch (error) {
         console.error('[PLANTS] Error fetching:', error);
         setPlants([]);
@@ -72,8 +77,8 @@ export const PlantProvider = ({ children }) => {
 
     fetchPlants();
     
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(fetchPlants, 30000);
+    // Set up auto-refresh every 10 seconds (faster refresh for real-time updates)
+    const interval = setInterval(fetchPlants, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -114,25 +119,32 @@ export const PlantProvider = ({ children }) => {
         },
       };
 
+      console.log('[ADD_PLANT] Sending to backend:', JSON.stringify(backendData, null, 2));
       const result = await plantsAPI.createPlant(backendData);
+      console.log('[ADD_PLANT] Backend response:', JSON.stringify(result, null, 2));
       
       // Refetch all plants from backend to ensure consistency
       // This prevents duplicates by replacing local state with server data
       const token = await AsyncStorage.getItem('auth_token');
       if (token) {
+        console.log('[ADD_PLANT] Refetching plants from backend...');
         const data = await plantsAPI.getAllPlants();
+        console.log('[ADD_PLANT] Fetched plants:', JSON.stringify(data, null, 2));
         
         // Handle both array and paginated response
         const plantList = Array.isArray(data) ? data : (data?.results || data?.data || []);
         
         if (Array.isArray(plantList)) {
+          console.log('[ADD_PLANT] Mapped', plantList.length, 'plants');
           setPlants(mapPlantList(plantList));
         }
       }
       
+      console.log('[ADD_PLANT] Plant creation successful');
       return { success: true, plant: result };
     } catch (error) {
-      console.error('Error adding plant:', error);
+      console.error('[ADD_PLANT] Error:', JSON.stringify(error, null, 2));
+      console.error('[ADD_PLANT] Error message:', error.message);
       return { success: false, error: error.message || 'Failed to add plant' };
     }
   }, []);

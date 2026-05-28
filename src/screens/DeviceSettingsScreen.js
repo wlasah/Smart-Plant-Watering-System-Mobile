@@ -37,16 +37,19 @@ function DeviceSettingsScreen(props) {
     if (!deviceId) return;
     setLoading(true);
     try {
+      console.log('[DeviceSettings] Loading config and telemetry for device:', deviceId);
       const config = await fetchDeviceConfig(deviceId);
+      console.log('[DeviceSettings] Config response:', JSON.stringify(config, null, 2));
       if (config) {
         setAutoWater(config.auto_water ?? true);
         setDryThreshold(String(config.dry_threshold ?? 2500));
         setWetThreshold(String(config.wet_threshold ?? 1500));
       }
       const telemetryData = await fetchDeviceTelemetry(deviceId, 10);
+      console.log('[DeviceSettings] Telemetry response:', JSON.stringify(telemetryData, null, 2));
       setTelemetry(Array.isArray(telemetryData) ? telemetryData : []);
     } catch (error) {
-      console.error('[DeviceSettings] Load error', error);
+      console.error('[DeviceSettings] Load error', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
@@ -66,18 +69,21 @@ function DeviceSettingsScreen(props) {
       wet_threshold: Number(wetThreshold) || 1500,
     };
 
+    console.log('[DeviceSettings] Saving config:', JSON.stringify(config, null, 2));
     setLoading(true);
     try {
       const saved = await saveDeviceConfig(config);
+      console.log('[DeviceSettings] Save response:', JSON.stringify(saved, null, 2));
       if (saved) {
         Alert.alert('Saved', 'Device settings saved successfully.');
+        console.log('[DeviceSettings] Reloading config after save...');
         await loadConfigAndTelemetry();
       } else {
         Alert.alert('Error', 'Failed to save device config.');
       }
     } catch (error) {
-      console.error('[DeviceSettings] Save error', error);
-      Alert.alert('Error', 'Unable to save device settings.');
+      console.error('[DeviceSettings] Save error', JSON.stringify(error, null, 2));
+      Alert.alert('Error', error?.message || 'Unable to save device settings.');
     } finally {
       setLoading(false);
     }
