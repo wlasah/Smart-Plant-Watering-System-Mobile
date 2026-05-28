@@ -4,21 +4,8 @@ import Constants from 'expo-constants';
 const expoConfig = Constants.expoConfig || Constants.manifest || {};
 const apiUrlFromConfig = expoConfig.extra?.EXPO_PUBLIC_API_URL;
 
-const localExpoHost = (() => {
-  if (apiUrlFromConfig) return null;
-
-  const hostString =
-    Constants.manifest?.debuggerHost ||
-    Constants.manifest2?.hostUri ||
-    Constants.manifest2?.debuggerHost;
-
-  if (!hostString) return null;
-
-  const host = hostString.split(':').slice(0, -1).join(':');
-  if (!host) return null;
-
-  return `http://${host}:8001`;
-})();
+// FIXED: Use correct backend IP
+const localExpoHost = 'http://172.22.231.200:8001';
 
 const apiUrl = apiUrlFromConfig || localExpoHost || 'https://fast-api-g456.onrender.com';
 
